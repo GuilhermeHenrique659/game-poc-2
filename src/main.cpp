@@ -17,13 +17,39 @@ public:
     }
 };
 
+class EmenyFollow : public Observer
+{
+private:
+    Enemy &enemy;
+
+public:
+    EmenyFollow(Enemy &enemy);
+    ~EmenyFollow();
+
+    void notify(const std::any &data) override
+    {
+        Vector2 post = std::any_cast<Vector2>(data);
+
+        if (post.x < enemy.position.x + 400 && post.y < enemy.position.y + 400)
+        {
+            enemy.follow(post);
+        }
+    }
+};
+
+EmenyFollow::EmenyFollow(Enemy &enemy) : enemy(enemy)
+{
+}
+
+EmenyFollow::~EmenyFollow() = default;
+
 int main()
 {
     const int screenWidth = 800;
     const int screenHeight = 450;
     Vector2 position = {(float)screenWidth / 2, (float)screenHeight / 2};
 
-    InitWindow(screenWidth, screenHeight, "Meu jogo com Raylib - C++");
+    InitWindow(screenWidth, screenHeight, "Raylib - C++");
     SetTargetFPS(60);
 
     Player player = Player(position);
@@ -33,11 +59,11 @@ int main()
     });
 
     player.subscribe("moved", std::make_unique<PlayerMoved>());
+    player.subscribe("moved", std::make_unique<EmenyFollow>(EmenyFollow(enemy)));
 
     while (!WindowShouldClose())
     {
         player.move();
-        enemy.follow(player.position);
 
         if (CheckCollisionCircles(player.position, 50, enemy.position, 50))
             CloseWindow();

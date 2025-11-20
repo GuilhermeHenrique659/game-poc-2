@@ -11,18 +11,18 @@ void Enemy::follow(Vector2 target)
 {
     if (target.x > position.x)
     {
-        position.x += 2.0f;
+        position.x += 2.1f;
     }
     if (target.x < position.x)
     {
-        position.x -= 2.0f;
+        position.x -= 2.1f;
     }
     if (target.y > position.y)
     {
-        position.y += 2.0f;
+        position.y += 2.1f;
     }
     if (target.y < position.y)
     {
-        position.y -= 2.0f;
+        position.y -= 2.1f;
     }
 }
