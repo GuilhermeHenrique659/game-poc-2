@@ -1,13 +1,13 @@
 
 #include "stdio.h"
 #include "raylib.h"
-#include "../common/Entity.h"
+#include "../common/Subject.h"
 #include <raymath.h>
 #include "any"
 
 using namespace std;
 
-class Player : public Entity
+class Player : public Subject
 {
 private:
     /* data */

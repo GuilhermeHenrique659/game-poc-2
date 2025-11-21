@@ -1,7 +1,7 @@
-#include "../common/Entity.h"
+#include "../common/Subject.h"
 #include "raylib.h"
 
-class Enemy : public Entity
+class Enemy : public Subject
 {
 private:
 public:

@@ -14,7 +14,7 @@ public:
     virtual void notify(const std::any &data) = 0;
 };
 
-class Entity
+class Subject
 {
 private:
     std::map<std::string, std::unique_ptr<Observer>> observers;
@@ -23,8 +23,8 @@ protected:
     void update(const std::string &event, const std::any &data);
 
 public:
-    Entity() = default;
-    virtual ~Entity() = default;
+    Subject() = default;
+    virtual ~Subject() = default;
 
     void subscribe(const std::string &event, std::unique_ptr<Observer> observer);
 };

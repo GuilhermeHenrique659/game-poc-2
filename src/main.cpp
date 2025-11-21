@@ -1,6 +1,6 @@
 // main.cpp
 #include <raylib.h>
-#include "common/Entity.h"   // seu header com Entity e Observer
+#include "common/Subject.h"  // seu header com Entity e Observer
 #include "player/player.cpp" // seu Player (depois vamos separar isso tbm)
 #include "enemy/Enemy.h"
 
