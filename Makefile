@@ -1,5 +1,3 @@
-# Makefile mais simples do mundo pra raylib + C++ (2025)
-
 CXX      = g++
 CXXFLAGS = -std=c++20 -Iinclude
 LDFLAGS  = -Llib
@@ -13,9 +11,10 @@ LDLIBS   = -lraylib -lopengl32 -lgdi32 -lwinmm
 # macOS → descomente se estiver no Mac
 # LDLIBS   = -lraylib -framework OpenGL -framework Cocoa -framework IOKit -framework CoreVideo
 
-SRC = $(wildcard src/*.cpp src/**/*.cpp src/**/**/*.cpp)
-OBJ = $(SRC:.cpp=.o)
-EXE = jogo
+SRC      = $(wildcard src/*.cpp src/**/*.cpp src/**/**/*.cpp)
+OBJ_DIR  = build
+OBJ      = $(SRC:src/%.cpp=$(OBJ_DIR)/%.o)
+EXE      = jogo
 
 all: $(EXE)
 
@@ -23,8 +22,13 @@ $(EXE): $(OBJ)
 	$(CXX) $(OBJ) -o $@ $(LDFLAGS) $(LDLIBS)
 	@echo "Compilou! Execute com: ./$(EXE)"
 
+# Regra genérica para compilar .cpp → .o dentro de build/
+$(OBJ_DIR)/%.o: src/%.cpp
+	@mkdir -p $(dir $@)               # cria subpastas dentro de build/ automaticamente
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
 clean:
-	rm -f $(OBJ) $(EXE) *.exe
+	rm -rf $(OBJ_DIR) $(EXE) *.exe
 
 run: all
 	./$(EXE)
