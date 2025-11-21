@@ -1,14 +1,15 @@
-#pragma once // <--- ESSA LINHA SALVA VIDAS
+#pragma once
 
-#include "map"
-#include "string"
-#include "any"
-#include "memory"
+#include <map>
+#include <string>
+#include <any>
+#include <memory>
+#include <utility>
 
 class Observer
 {
 public:
-    Observer() = default; // ADICIONE ISSO
+    Observer() = default;
     virtual ~Observer() = default;
 
     virtual void notify(const std::any &data) = 0;
@@ -20,7 +21,7 @@ private:
     std::map<std::string, std::unique_ptr<Observer>> observers;
 
 protected:
-    void update(const std::string &event, const std::any &data);
+    void _update(const std::string &event, const std::any &data);
 
 public:
     Subject() = default;

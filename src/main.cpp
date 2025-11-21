@@ -3,45 +3,53 @@
 #include "common/Subject.h"  // seu header com Entity e Observer
 #include "player/player.cpp" // seu Player (depois vamos separar isso tbm)
 #include "enemy/Enemy.h"
+#include "common/ui/Button.h"
+#include "scene/Scene.h"
+#include "common/ui/Hover.h"
+#include "scene/menu/Menu.h"
 
 #include <any>
 #include <cstdio>
+#include <memory>
 
-class PlayerMoved : public Observer
+struct GameState
 {
-public:
-    void notify(const std::any &data) override
-    {
-        Vector2 pos = std::any_cast<Vector2>(data);
-        printf("Player moved -> X: %.1f | Y: %.1f\n", pos.x, pos.y);
-    }
+    bool isRunning;
+    int currentScene;
 };
 
-class EmenyFollow : public Observer
+class OnClick : public Observer
 {
 private:
-    Enemy &enemy;
+    GameState *gameState;
 
 public:
-    EmenyFollow(Enemy &enemy);
-    ~EmenyFollow();
-
+    OnClick(GameState *gameState) : gameState(gameState) {};
+    ~OnClick() = default;
     void notify(const std::any &data) override
     {
-        Vector2 post = std::any_cast<Vector2>(data);
+        Button *button = std::any_cast<Button *>(data);
 
-        if (post.x < enemy.position.x + 400 && post.y < enemy.position.y + 400)
-        {
-            enemy.follow(post);
-        }
+        TraceLog(LOG_INFO, "Button %s clicked!", button->label);
+
+        gameState->isRunning = false;
     }
 };
 
-EmenyFollow::EmenyFollow(Enemy &enemy) : enemy(enemy)
+/* class OnHover : public Observer
 {
-}
+private:
 
-EmenyFollow::~EmenyFollow() = default;
+public:
+    OnHover() = default;
+    ~OnHover() = default;
+    void notify(const std::any &data) override
+    {
+        Button *button = std::any_cast<Button *>(data);
+
+        button->setColor(GRAY);
+    }
+}; */
 
 int main()
 {
@@ -49,33 +57,36 @@ int main()
     const int screenHeight = 450;
     Vector2 position = {(float)screenWidth / 2, (float)screenHeight / 2};
 
+    GameState gameState = {
+        .isRunning = true,
+        .currentScene = 0,
+    };
+
     InitWindow(screenWidth, screenHeight, "Raylib - C++");
     SetTargetFPS(60);
 
-    Player player = Player(position);
-    Enemy enemy = Enemy({
-        x : 100,
-        y : 100,
-    });
+    Button button("Click Me", 350, 200, 100, 50);
+    button.subscribe("OnHover", std::make_unique<OnHover>());
 
-    player.subscribe("moved", std::make_unique<PlayerMoved>());
-    player.subscribe("moved", std::make_unique<EmenyFollow>(EmenyFollow(enemy)));
+    std::unique_ptr<Scene> currentScene = std::make_unique<Menu>();
+
+    currentScene->Setup();
 
     while (!WindowShouldClose())
     {
-        player.move();
-
-        if (CheckCollisionCircles(player.position, 50, enemy.position, 50))
-            CloseWindow();
+        currentScene->Update(GetFrameTime());
 
         BeginDrawing();
         ClearBackground(RAYWHITE);
 
-        DrawCircleV(player.position, 50, MAROON);
-
-        DrawCircleV(enemy.position, 50, BLACK);
+        currentScene->Presenter(GetFrameTime());
 
         EndDrawing();
+
+        if (gameState.isRunning == false)
+        {
+            break;
+        }
     }
 
     CloseWindow();

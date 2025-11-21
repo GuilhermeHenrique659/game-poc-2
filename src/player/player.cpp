@@ -31,6 +31,6 @@ public:
             position.y += 2.0f;
 
         if (!Vector2Equals(olpPosition, position))
-            update("moved", std::any(position));
+            _update("moved", std::any(position));
     }
 };
