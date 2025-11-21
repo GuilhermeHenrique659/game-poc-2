@@ -1,9 +1,13 @@
 #pragma once
+#include "GameState.h"
 
 class Scene
 {
+protected:
+    GameState &gameState;
+
 public:
-    Scene() = default;
+    Scene(GameState &gameState) : gameState(gameState) {};
     virtual ~Scene() = default;
 
     virtual void Setup() = 0;

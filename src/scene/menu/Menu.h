@@ -1,6 +1,6 @@
 #pragma once
-#include "../Scene.h"
-#include "../../common/ui/Button.h" // ou o caminho correto
+#include "../../common/Scene.h"
+#include "../../common/ui/Button.h"
 #include <vector>
 
 class Menu : public Scene
@@ -9,7 +9,7 @@ private:
     std::vector<std::unique_ptr<Button>> buttons;
 
 public:
-    Menu() = default;
+    Menu(GameState &gameState) : Scene(gameState) {};
     ~Menu() = default;
 
     void Setup();

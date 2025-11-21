@@ -4,90 +4,65 @@
 #include "player/player.cpp" // seu Player (depois vamos separar isso tbm)
 #include "enemy/Enemy.h"
 #include "common/ui/Button.h"
-#include "scene/Scene.h"
+#include "common/Scene.h"
+#include "common/GameState.h"
 #include "common/ui/Hover.h"
 #include "scene/menu/Menu.h"
+#include "scene/world/World.h"
+#include <unordered_map>
 
 #include <any>
 #include <cstdio>
 #include <memory>
 
-struct GameState
-{
-    bool isRunning;
-    int currentScene;
-};
-
-class OnClick : public Observer
-{
-private:
-    GameState *gameState;
-
-public:
-    OnClick(GameState *gameState) : gameState(gameState) {};
-    ~OnClick() = default;
-    void notify(const std::any &data) override
-    {
-        Button *button = std::any_cast<Button *>(data);
-
-        TraceLog(LOG_INFO, "Button %s clicked!", button->label);
-
-        gameState->isRunning = false;
-    }
-};
-
-/* class OnHover : public Observer
-{
-private:
-
-public:
-    OnHover() = default;
-    ~OnHover() = default;
-    void notify(const std::any &data) override
-    {
-        Button *button = std::any_cast<Button *>(data);
-
-        button->setColor(GRAY);
-    }
-}; */
-
 int main()
 {
     const int screenWidth = 800;
     const int screenHeight = 450;
-    Vector2 position = {(float)screenWidth / 2, (float)screenHeight / 2};
+    std::unordered_map<std::string, std::unique_ptr<Scene>> scenes;
 
     GameState gameState = {
         .isRunning = true,
-        .currentScene = 0,
+        .currentScene = "menu",
     };
 
     InitWindow(screenWidth, screenHeight, "Raylib - C++");
     SetTargetFPS(60);
 
-    Button button("Click Me", 350, 200, 100, 50);
-    button.subscribe("OnHover", std::make_unique<OnHover>());
+    scenes["menu"] = std::make_unique<Menu>(gameState);
+    scenes["world"] = std::make_unique<World>(gameState);
 
-    std::unique_ptr<Scene> currentScene = std::make_unique<Menu>();
+    std::unique_ptr<Scene> *currentScene = &scenes["menu"];
 
-    currentScene->Setup();
+    for (auto &&scene : scenes)
+    {
+        scene.second->Setup();
+    }
 
     while (!WindowShouldClose())
     {
-        currentScene->Update(GetFrameTime());
+        if (gameState.currentScene == "world")
+        {
+            currentScene = &scenes["world"];
+        }
+
+        currentScene->get()->Update(GetFrameTime());
 
         BeginDrawing();
         ClearBackground(RAYWHITE);
 
-        currentScene->Presenter(GetFrameTime());
+        currentScene->get()->Presenter(GetFrameTime());
 
         EndDrawing();
 
         if (gameState.isRunning == false)
         {
+            TraceLog(LOG_INFO, "Exiting game loop.");
             break;
         }
     }
+
+    delete currentScene;
 
     CloseWindow();
     return 0;
