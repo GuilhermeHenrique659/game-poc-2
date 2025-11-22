@@ -9,6 +9,7 @@
 #include "scene/menu/Menu.h"
 #include "scene/world/World.h"
 #include <unordered_map>
+#include "common/ResourceManager.h"
 
 #include <any>
 #include <cstdio>
@@ -28,19 +29,22 @@ int main()
     InitWindow(screenWidth, screenHeight, "Raylib - C++");
     SetTargetFPS(60);
 
-    Texture2D runDownTexture = LoadTexture("resources/sprites/down.png");
-    Texture2D runUpTexture = LoadTexture("resources/sprites/up.png");
-    Texture2D runLeftTexture = LoadTexture("resources/sprites/left.png");
-    Texture2D runRightTexture = LoadTexture("resources/sprites/right.png");
-    Texture2D runLeftUpTexture = LoadTexture("resources/sprites/left_up.png");
-    Texture2D runRightUpTexture = LoadTexture("resources/sprites/right_up.png");
-    Texture2D runLeftDownTexture = LoadTexture("resources/sprites/left_down.png");
-    Texture2D runRightDownTexture = LoadTexture("resources/sprites/right_down.png");
+    std::unique_ptr<ResourceManager> resourceManager = ResourceManager::Create();
 
-    TraceLog(LOG_INFO, "runDownTexture id: %d", runDownTexture.id);
+    resourceManager->RegisterTexture("run_down", "resources/sprites/down.png");
+    resourceManager->RegisterTexture("run_up", "resources/sprites/up.png");
+    resourceManager->RegisterTexture("run_left", "resources/sprites/left.png");
+    resourceManager->RegisterTexture("run_right", "resources/sprites/right.png");
+    resourceManager->RegisterTexture("run_left_up", "resources/sprites/left_up.png");
+    resourceManager->RegisterTexture("run_right_up", "resources/sprites/right_up.png");
+    resourceManager->RegisterTexture("run_left_down", "resources/sprites/left_down.png");
+    resourceManager->RegisterTexture("run_right_down", "resources/sprites/right_down.png");
+    resourceManager->RegisterTexture("idle_sheet", "resources/sprites/idle_sheet.png");
+
+    resourceManager->RegisterTexture("floor", "resources/sprites/floor.png");
 
     scenes["menu"] = std::make_unique<Menu>(gameState);
-    scenes["world"] = std::make_unique<World>(gameState, LoadTexture("resources/sprites/floor.png"), runDownTexture, runUpTexture, runLeftTexture, runRightTexture, runLeftUpTexture, runLeftDownTexture, runRightUpTexture, runRightDownTexture);
+    scenes["world"] = std::make_unique<World>(gameState, std::move(resourceManager));
 
     std::unique_ptr<Scene> *currentScene = &scenes["menu"];
 

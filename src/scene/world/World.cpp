@@ -9,11 +9,9 @@ Vector2 IsoWorldToScreen(float x, float y)
 void World::Setup()
 {
 
-    background = LoadTexture("resources/sprites/floor.png");
+    Texture2D texture = resourceManager->GetTexture("idle_sheet");
 
-    Texture2D texture = LoadTexture("resources/sprites/idle_sheet.png");
-
-    Vector2 startPos = IsoWorldToScreen(GetScreenWidth() / 2.0f / 128.0f, GetScreenHeight() / 2.0f / 64.0f);
+    Vector2 startPos = IsoWorldToScreen(GetScreenWidth() / 2.0f / 256.0f, GetScreenHeight() / 2.0f / 128.0f);
 
     Rectangle destRec = {
         startPos.x,
@@ -39,7 +37,14 @@ void World::Setup()
 void World::Update(float delta)
 {
     player->move(camera);
-    camera.target = player->position;
+    camera.target = Vector2Lerp(camera.target, player->position, 5.0f * delta);
+
+    camera.zoom = expf(logf(camera.zoom) + ((float)GetMouseWheelMove() * 0.1f));
+
+    if (camera.zoom > 3.0f)
+        camera.zoom = 3.0f;
+    else if (camera.zoom < 0.1f)
+        camera.zoom = 0.1f;
 }
 
 void World::Presenter(float delta)
@@ -51,6 +56,7 @@ void World::Presenter(float delta)
         for (int j = 0; j < 10; j++)
         {
             Vector2 gridPostion = IsoWorldToScreen(i, j);
+            Texture2D background = resourceManager->GetTexture("floor");
             DrawTexturePro(
                 background,
                 {0.0f, 0.0f, (float)background.width, (float)background.height},
@@ -78,31 +84,31 @@ void World::Presenter(float delta)
         switch (dir)
         {
         case 0:
-            currentTexture = playerRunningTextureRight;
+            currentTexture = resourceManager->GetTexture("run_right");
             break;
         case 1:
-            currentTexture = playerRunningTextureRightDown;
+            currentTexture = resourceManager->GetTexture("run_right_down");
             break;
         case 2:
-            currentTexture = playerRunningTextureDown;
+            currentTexture = resourceManager->GetTexture("run_down");
             break;
         case 3:
-            currentTexture = playerRunningTextureLeftDown;
+            currentTexture = resourceManager->GetTexture("run_left_down");
             break;
         case 4:
-            currentTexture = playerRunningTextureLeft;
+            currentTexture = resourceManager->GetTexture("run_left");
             break;
         case 5:
-            currentTexture = playerRunningTextureLeftUp;
+            currentTexture = resourceManager->GetTexture("run_left_up");
             break;
         case 6:
-            currentTexture = playerRunningTextureUp;
+            currentTexture = resourceManager->GetTexture("run_up");
             break;
         case 7:
-            currentTexture = playerRunningTextureRightUp;
+            currentTexture = resourceManager->GetTexture("run_right_up");
             break;
         default:
-            currentTexture = playerRunningTextureDown;
+            currentTexture = resourceManager->GetTexture("run_down");
             break;
         }
 
