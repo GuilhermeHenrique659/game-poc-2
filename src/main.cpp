@@ -1,7 +1,6 @@
 // main.cpp
 #include <raylib.h>
-#include "common/Subject.h"  // seu header com Entity e Observer
-#include "player/player.cpp" // seu Player (depois vamos separar isso tbm)
+#include "common/Subject.h" // seu header com Entity e Observer
 #include "enemy/Enemy.h"
 #include "common/ui/Button.h"
 #include "common/Scene.h"
@@ -17,8 +16,8 @@
 
 int main()
 {
-    const int screenWidth = 800;
-    const int screenHeight = 450;
+    const int screenWidth = 1270;
+    const int screenHeight = 720;
     std::unordered_map<std::string, std::unique_ptr<Scene>> scenes;
 
     GameState gameState = {
@@ -29,8 +28,19 @@ int main()
     InitWindow(screenWidth, screenHeight, "Raylib - C++");
     SetTargetFPS(60);
 
+    Texture2D runDownTexture = LoadTexture("resources/sprites/down.png");
+    Texture2D runUpTexture = LoadTexture("resources/sprites/up.png");
+    Texture2D runLeftTexture = LoadTexture("resources/sprites/left.png");
+    Texture2D runRightTexture = LoadTexture("resources/sprites/right.png");
+    Texture2D runLeftUpTexture = LoadTexture("resources/sprites/left_up.png");
+    Texture2D runRightUpTexture = LoadTexture("resources/sprites/right_up.png");
+    Texture2D runLeftDownTexture = LoadTexture("resources/sprites/left_down.png");
+    Texture2D runRightDownTexture = LoadTexture("resources/sprites/right_down.png");
+
+    TraceLog(LOG_INFO, "runDownTexture id: %d", runDownTexture.id);
+
     scenes["menu"] = std::make_unique<Menu>(gameState);
-    scenes["world"] = std::make_unique<World>(gameState);
+    scenes["world"] = std::make_unique<World>(gameState, LoadTexture("resources/sprites/floor.png"), runDownTexture, runUpTexture, runLeftTexture, runRightTexture, runLeftUpTexture, runLeftDownTexture, runRightUpTexture, runRightDownTexture);
 
     std::unique_ptr<Scene> *currentScene = &scenes["menu"];
 
@@ -53,6 +63,7 @@ int main()
 
         currentScene->get()->Presenter(GetFrameTime());
 
+        DrawFPS(10, 10);
         EndDrawing();
 
         if (gameState.isRunning == false)

@@ -14,12 +14,12 @@ void Button::Update()
 
     if (isMouseOver)
     {
-        _update("OnHover", this);
+        _publish("OnHover", this);
     }
 
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && isMouseOver)
     {
-        _update("OnClick", this);
+        _publish("OnClick", this);
     }
 
     if (!isMouseOver)

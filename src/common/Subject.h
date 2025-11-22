@@ -18,10 +18,10 @@ public:
 class Subject
 {
 private:
-    std::map<std::string, std::unique_ptr<Observer>> observers;
+    std::map<std::string, std::unique_ptr<Observer>> observers = std::map<std::string, std::unique_ptr<Observer>>();
 
 protected:
-    void _update(const std::string &event, const std::any &data);
+    void _publish(const std::string &event, const std::any &data);
 
 public:
     Subject() = default;
