@@ -13,14 +13,13 @@ void World::Setup()
 
     Texture2D texture = LoadTexture("resources/sprites/idle_sheet.png");
 
-    Vector2 startPos = {471.00, 138.00};
+    Vector2 startPos = IsoWorldToScreen(GetScreenWidth() / 2.0f / 128.0f, GetScreenHeight() / 2.0f / 64.0f);
 
     Rectangle destRec = {
-        startPos.x, // x (ainda vai ser corrigido abaixo)
-        startPos.y, // y
-        256.0f,     // largura
-        256.0f      // altura
-    };
+        startPos.x,
+        startPos.y,
+        256.0f,
+        256.0f};
 
     destRec.x -= destRec.width * 0.5f;
     destRec.y -= destRec.height * 0.5f;
@@ -33,7 +32,7 @@ void World::Setup()
 
     camera.zoom = 1.0f;
     camera.rotation = 0.0f;
-    camera.offset = (Vector2){471.00, 138.00};
+    camera.offset = {(float)GetScreenWidth() / 2.0f, (float)GetScreenHeight() / 2.0f};
     camera.target = player->position;
 }
 
@@ -61,6 +60,7 @@ void World::Presenter(float delta)
                 WHITE);
         }
     }
+
     if (player->isIdle)
     {
         DrawTexturePro(

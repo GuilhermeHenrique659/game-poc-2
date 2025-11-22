@@ -64,5 +64,7 @@ void Player::NormalizeMove(Vector2 &moveDir)
         }
         position.x += moveDir.x * 5.0f; // supondo que tenha float speed = 200.0f ou algo assim
         position.y += moveDir.y * 5.0f;
+
+        Vector2Normalize(position);
     }
 }
