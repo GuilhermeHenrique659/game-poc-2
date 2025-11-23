@@ -1,5 +1,7 @@
 // main.cpp
 #include <raylib.h>
+#include <enet/enet.h>
+
 #include "common/Subject.h" // seu header com Entity e Observer
 #include "enemy/Enemy.h"
 #include "common/ui/Button.h"

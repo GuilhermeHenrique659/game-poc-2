@@ -3,17 +3,8 @@
 #include "../../entity/player/PlayerSpriteAnimation.h"
 #include "../../common/util/VectorUtil.h"
 
-/*
-Vector2 IsoWorldToScreen(float x, float y)
-{
-    return (Vector2){(x - y) * (256 / 2.0f), (x + y) * (128 / 2.0f)};
-}
- */
 void World::Setup()
 {
-
-    Texture2D texture = ResourceManager::Get().GetTexture("idle_sheet");
-
     Vector2 startPos = IsoWorldToScreen(GetScreenWidth() / 2.0f / 256.0f, GetScreenHeight() / 2.0f / 128.0f);
 
     Rectangle destRec = {
@@ -21,9 +12,6 @@ void World::Setup()
         startPos.y,
         256.0f,
         256.0f};
-
-    destRec.x -= destRec.width * 0.5f;
-    destRec.y -= destRec.height * 0.5f;
 
     player = std::make_unique<Player>(
         startPos,
