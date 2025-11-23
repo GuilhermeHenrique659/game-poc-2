@@ -126,8 +126,6 @@ void World::Presenter(float delta)
             continue;
 
         Rectangle dest = {rp.position.x, rp.position.y, 256, 256};
-        dest.x -= 128;
-        dest.y -= 128;
 
         // auto remote = std::make_unique<Player>(rp.position, dest, PlayerSpriteAnimation());
 
