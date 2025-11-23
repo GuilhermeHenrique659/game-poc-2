@@ -25,5 +25,7 @@ public:
 
     PlayerSpriteAnimation GetPlayerSprite();
     PlayerDirection GetPlayerDirection();
+    void SetPlayerDirection(PlayerDirection playerDirection);
+
     void Animate();
 };

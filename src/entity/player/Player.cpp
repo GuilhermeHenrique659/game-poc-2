@@ -85,6 +85,11 @@ int Player::CalculateDirection()
     return (int)((angle + HALF_FORTY_FIVE_DEGREES) / FORTY_FIVE_DEGREES) % DIRECTIONS;
 }
 
+void Player::SetPlayerDirection(PlayerDirection newPlayerDirection)
+{
+    playerDirection = newPlayerDirection;
+}
+
 void Player::Animate()
 {
     playerSpriteAnimation.Animate(playerDirection, isIdle);

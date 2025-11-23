@@ -26,6 +26,8 @@ void World::Setup()
 
 void World::Update(float delta)
 {
+    network.Update(delta);
+
     player->move(camera);
     camera.target = Vector2Lerp(camera.target, player->position, 5.0f * delta);
 
@@ -35,10 +37,59 @@ void World::Update(float delta)
         camera.zoom = 3.0f;
     else if (camera.zoom < 0.1f)
         camera.zoom = 0.1f;
+
+    static float sendTimer = 0;
+    sendTimer += delta;
+    if (sendTimer > 1.0f / 40.0f)
+    {
+        network.SendMyState(
+            player->position,
+            player->GetPlayerDirection(),
+            player->isIdle,
+            player->angle);
+        sendTimer = 0;
+    }
+
+    if (IsKeyPressed(KEY_H))
+    {
+        TraceLog(LOG_INFO, "Start as host");
+        StartHost(); // tecla H = host
+    }
+    if (IsKeyPressed(KEY_C))
+    {
+        TraceLog(LOG_INFO, "Try connect");
+        ConnectToHost(); // tecla C = conectar em 127.0.0.1
+    }
+
+    // Atualiza remote players (apenas cliente)
+    if (!network.isServer)
+    {
+        // Copia do server (você pode melhorar com interpolação depois)
+        // por enquanto vamos ignorar ou guardar em remotePlayers
+    }
+}
+
+void World::ConnectToHost()
+{
+    if (network.InitAsClient())
+    {
+        TraceLog(LOG_INFO, "Connect with success");
+    };
+}
+
+void World::StartHost()
+{
+    network.InitAsServer();
 }
 
 void World::Presenter(float delta)
 {
+
+    if (network.isServer)
+    {
+        DrawText("HOSTING SERVER", 100, 100, 12, BLACK);
+    }
+
     BeginMode2D(camera);
     for (int i = 0; i < 10; i++)
     {
@@ -68,60 +119,38 @@ void World::Presenter(float delta)
         {0, 0},
         0.0f,
         WHITE);
-    /*
-        if (player->isIdle)
+
+    for (auto &[id, rp] : (network.isServer ? network.players : remotePlayers))
+    {
+        if (id == myPlayerId && !network.isServer)
+            continue;
+
+        Rectangle dest = {rp.position.x, rp.position.y, 256, 256};
+        dest.x -= 128;
+        dest.y -= 128;
+
+        // auto remote = std::make_unique<Player>(rp.position, dest, PlayerSpriteAnimation());
+
+        if (remotePlayer == NULL)
         {
-            DrawTexturePro(
-                player->texture,
-                {(float)player->sourceRec.width * dir, 0.0f, (float)player->sourceRec.width, (float)player->sourceRec.height},
-                player->destRec,
-                {0, 0},
-                0.0f,
-                WHITE);
+            remotePlayer = std::make_unique<Player>(rp.position, dest, PlayerSpriteAnimation());
         }
-        else
-        {
-            Texture2D currentTexture;
 
-            switch (dir)
-            {
-            case 0:
-                currentTexture = resourceManager->GetTexture("run_right");
-                break;
-            case 1:
-                currentTexture = resourceManager->GetTexture("run_right_down");
-                break;
-            case 2:
-                currentTexture = resourceManager->GetTexture("run_down");
-                break;
-            case 3:
-                currentTexture = resourceManager->GetTexture("run_left_down");
-                break;
-            case 4:
-                currentTexture = resourceManager->GetTexture("run_left");
-                break;
-            case 5:
-                currentTexture = resourceManager->GetTexture("run_left_up");
-                break;
-            case 6:
-                currentTexture = resourceManager->GetTexture("run_up");
-                break;
-            case 7:
-                currentTexture = resourceManager->GetTexture("run_right_up");
-                break;
-            default:
-                currentTexture = resourceManager->GetTexture("run_down");
-                break;
-            }
+        remotePlayer->SetPlayerDirection(rp.direction);
+        remotePlayer->angle = rp.angle;
+        remotePlayer->isIdle = rp.isIdle;
 
-            DrawTexturePro(
-                currentTexture,
-                {(float)player->sourceRec.width * player->currentFrame, 0.0f, (float)player->sourceRec.width, (float)player->sourceRec.height},
-                player->destRec,
-                {0, 0},
-                0.0f,
-                WHITE);
-        } */
+        remotePlayer->Animate();
+        PlayerSpriteAnimation remoteSprite = remotePlayer->GetPlayerSprite();
+
+        DrawTexturePro(
+            remoteSprite.GetCurrentTexture(),
+            remoteSprite.GetSourceRectangle(),
+            dest,
+            {128, 128},
+            0,
+            Fade(WHITE, 0.8f));
+    }
 
     EndMode2D();
 }
