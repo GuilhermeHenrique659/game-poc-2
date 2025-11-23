@@ -9,9 +9,9 @@ class ResourceManager
 {
 private:
     std::unordered_map<std::string, Texture2D> textures;
-
-public:
-    ResourceManager() = default;
+    ResourceManager() {} // construtor privado
+    ResourceManager(const ResourceManager &) = delete;
+    ResourceManager &operator=(const ResourceManager &) = delete;
     ~ResourceManager()
     {
         for (auto &pair : textures)
@@ -20,7 +20,9 @@ public:
         }
     };
 
-    static std::unique_ptr<ResourceManager> Create();
+public:
+    static ResourceManager &Get();
+
     void RegisterTexture(const std::string &key, const std::string &filePath);
     Texture2D &GetTexture(const std::string &key);
 };

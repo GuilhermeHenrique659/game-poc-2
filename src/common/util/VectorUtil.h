@@ -1,0 +1,7 @@
+#include "raylib.h"
+
+Vector2 IsoWorldToScreen(float x, float y);
+
+Vector2 ToIso(Vector2 v);
+
+Vector2 NormalizeVectorInIso(Vector2 &v);

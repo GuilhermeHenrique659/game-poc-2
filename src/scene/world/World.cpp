@@ -1,15 +1,18 @@
 #include "world.h"
 #include "raymath.h"
+#include "../../entity/player/PlayerSpriteAnimation.h"
+#include "../../common/util/VectorUtil.h"
 
+/*
 Vector2 IsoWorldToScreen(float x, float y)
 {
     return (Vector2){(x - y) * (256 / 2.0f), (x + y) * (128 / 2.0f)};
 }
-
+ */
 void World::Setup()
 {
 
-    Texture2D texture = resourceManager->GetTexture("idle_sheet");
+    Texture2D texture = ResourceManager::Get().GetTexture("idle_sheet");
 
     Vector2 startPos = IsoWorldToScreen(GetScreenWidth() / 2.0f / 256.0f, GetScreenHeight() / 2.0f / 128.0f);
 
@@ -24,13 +27,12 @@ void World::Setup()
 
     player = std::make_unique<Player>(
         startPos,
-        texture,
-        Rectangle{0.0f, 0.0f, (float)texture.width / 8.0f, (float)texture.height},
-        destRec);
+        destRec,
+        PlayerSpriteAnimation());
 
     camera.zoom = 1.0f;
     camera.rotation = 0.0f;
-    camera.offset = {(float)GetScreenWidth() / 2.0f, (float)GetScreenHeight() / 2.0f};
+    camera.offset = {(float)GetScreenWidth() / 2.0f, (float)GetScreenHeight() / 2.0f - 128.0f};
     camera.target = player->position;
 }
 
@@ -49,14 +51,14 @@ void World::Update(float delta)
 
 void World::Presenter(float delta)
 {
-    int dir = (int)((player->angle + 22.5f) / 45.0f) % 8;
     BeginMode2D(camera);
     for (int i = 0; i < 10; i++)
     {
         for (int j = 0; j < 10; j++)
         {
             Vector2 gridPostion = IsoWorldToScreen(i, j);
-            Texture2D background = resourceManager->GetTexture("floor");
+            Texture2D background = ResourceManager::Get().GetTexture("floor");
+
             DrawTexturePro(
                 background,
                 {0.0f, 0.0f, (float)background.width, (float)background.height},
@@ -67,59 +69,71 @@ void World::Presenter(float delta)
         }
     }
 
-    if (player->isIdle)
-    {
-        DrawTexturePro(
-            player->texture,
-            {(float)player->sourceRec.width * dir, 0.0f, (float)player->sourceRec.width, (float)player->sourceRec.height},
-            player->destRec,
-            {0, 0},
-            0.0f,
-            WHITE);
-    }
-    else
-    {
-        Texture2D currentTexture;
+    player->Animate();
 
-        switch (dir)
+    PlayerSpriteAnimation sprite = player->GetPlayerSprite();
+
+    DrawTexturePro(
+        sprite.GetCurrentTexture(),
+        sprite.GetSourceRectangle(),
+        player->destRec,
+        {0, 0},
+        0.0f,
+        WHITE);
+    /*
+        if (player->isIdle)
         {
-        case 0:
-            currentTexture = resourceManager->GetTexture("run_right");
-            break;
-        case 1:
-            currentTexture = resourceManager->GetTexture("run_right_down");
-            break;
-        case 2:
-            currentTexture = resourceManager->GetTexture("run_down");
-            break;
-        case 3:
-            currentTexture = resourceManager->GetTexture("run_left_down");
-            break;
-        case 4:
-            currentTexture = resourceManager->GetTexture("run_left");
-            break;
-        case 5:
-            currentTexture = resourceManager->GetTexture("run_left_up");
-            break;
-        case 6:
-            currentTexture = resourceManager->GetTexture("run_up");
-            break;
-        case 7:
-            currentTexture = resourceManager->GetTexture("run_right_up");
-            break;
-        default:
-            currentTexture = resourceManager->GetTexture("run_down");
-            break;
+            DrawTexturePro(
+                player->texture,
+                {(float)player->sourceRec.width * dir, 0.0f, (float)player->sourceRec.width, (float)player->sourceRec.height},
+                player->destRec,
+                {0, 0},
+                0.0f,
+                WHITE);
         }
+        else
+        {
+            Texture2D currentTexture;
 
-        DrawTexturePro(
-            currentTexture,
-            {(float)player->sourceRec.width * player->currentFrame, 0.0f, (float)player->sourceRec.width, (float)player->sourceRec.height},
-            player->destRec,
-            {0, 0},
-            0.0f,
-            WHITE);
-    }
+            switch (dir)
+            {
+            case 0:
+                currentTexture = resourceManager->GetTexture("run_right");
+                break;
+            case 1:
+                currentTexture = resourceManager->GetTexture("run_right_down");
+                break;
+            case 2:
+                currentTexture = resourceManager->GetTexture("run_down");
+                break;
+            case 3:
+                currentTexture = resourceManager->GetTexture("run_left_down");
+                break;
+            case 4:
+                currentTexture = resourceManager->GetTexture("run_left");
+                break;
+            case 5:
+                currentTexture = resourceManager->GetTexture("run_left_up");
+                break;
+            case 6:
+                currentTexture = resourceManager->GetTexture("run_up");
+                break;
+            case 7:
+                currentTexture = resourceManager->GetTexture("run_right_up");
+                break;
+            default:
+                currentTexture = resourceManager->GetTexture("run_down");
+                break;
+            }
+
+            DrawTexturePro(
+                currentTexture,
+                {(float)player->sourceRec.width * player->currentFrame, 0.0f, (float)player->sourceRec.width, (float)player->sourceRec.height},
+                player->destRec,
+                {0, 0},
+                0.0f,
+                WHITE);
+        } */
 
     EndMode2D();
 }

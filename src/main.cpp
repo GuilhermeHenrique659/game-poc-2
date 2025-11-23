@@ -29,22 +29,22 @@ int main()
     InitWindow(screenWidth, screenHeight, "Raylib - C++");
     SetTargetFPS(60);
 
-    std::unique_ptr<ResourceManager> resourceManager = ResourceManager::Create();
+    ResourceManager &resourceManager = ResourceManager::Get();
 
-    resourceManager->RegisterTexture("run_down", "resources/sprites/down.png");
-    resourceManager->RegisterTexture("run_up", "resources/sprites/up.png");
-    resourceManager->RegisterTexture("run_left", "resources/sprites/left.png");
-    resourceManager->RegisterTexture("run_right", "resources/sprites/right.png");
-    resourceManager->RegisterTexture("run_left_up", "resources/sprites/left_up.png");
-    resourceManager->RegisterTexture("run_right_up", "resources/sprites/right_up.png");
-    resourceManager->RegisterTexture("run_left_down", "resources/sprites/left_down.png");
-    resourceManager->RegisterTexture("run_right_down", "resources/sprites/right_down.png");
-    resourceManager->RegisterTexture("idle_sheet", "resources/sprites/idle_sheet.png");
+    resourceManager.RegisterTexture("run_down", "resources/sprites/down.png");
+    resourceManager.RegisterTexture("run_up", "resources/sprites/up.png");
+    resourceManager.RegisterTexture("run_left", "resources/sprites/left.png");
+    resourceManager.RegisterTexture("run_right", "resources/sprites/right.png");
+    resourceManager.RegisterTexture("run_left_up", "resources/sprites/left_up.png");
+    resourceManager.RegisterTexture("run_right_up", "resources/sprites/right_up.png");
+    resourceManager.RegisterTexture("run_left_down", "resources/sprites/left_down.png");
+    resourceManager.RegisterTexture("run_right_down", "resources/sprites/right_down.png");
+    resourceManager.RegisterTexture("idle_sheet", "resources/sprites/idle_sheet.png");
 
-    resourceManager->RegisterTexture("floor", "resources/sprites/floor.png");
+    resourceManager.RegisterTexture("floor", "resources/sprites/floor.png");
 
     scenes["menu"] = std::make_unique<Menu>(gameState);
-    scenes["world"] = std::make_unique<World>(gameState, std::move(resourceManager));
+    scenes["world"] = std::make_unique<World>(gameState);
 
     std::unique_ptr<Scene> *currentScene = &scenes["menu"];
 
