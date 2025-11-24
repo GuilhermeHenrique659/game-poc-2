@@ -84,7 +84,6 @@ void World::StartHost()
 
 void World::Presenter(float delta)
 {
-
     if (network.isServer)
     {
         DrawText("HOSTING SERVER", 100, 100, 12, BLACK);
@@ -108,8 +107,8 @@ void World::Presenter(float delta)
         }
     }
 
+    // Desenha o player local
     player->Animate();
-
     PlayerSpriteAnimation sprite = player->GetPlayerSprite();
 
     DrawTexturePro(
@@ -120,20 +119,25 @@ void World::Presenter(float delta)
         0.0f,
         WHITE);
 
-    for (auto &[id, rp] : (network.isServer ? network.players : remotePlayers))
+    // Desenha todos os players conhecidos pela rede
+    for (auto &[id, rp] : network.players)
     {
-        if (id == myPlayerId && !network.isServer)
+        // No cliente: não desenha o próprio player de novo
+        if (!network.isServer && id == network.myPlayerId)
             continue;
 
-        Rectangle dest = {rp.position.x, rp.position.y, 256, 256};
+        // No servidor: se quiser, também pode pular o id == myPlayerId (0) e desenhar só clientes
+        // if (network.isServer && id == network.myPlayerId) continue;
 
-        // auto remote = std::make_unique<Player>(rp.position, dest, PlayerSpriteAnimation());
+        Rectangle dest = {rp.position.x, rp.position.y, 256, 256};
 
         if (remotePlayer == NULL)
         {
             remotePlayer = std::make_unique<Player>(rp.position, dest, PlayerSpriteAnimation());
         }
 
+        remotePlayer->position = rp.position;
+        remotePlayer->destRec = dest;
         remotePlayer->SetPlayerDirection(rp.direction);
         remotePlayer->angle = rp.angle;
         remotePlayer->isIdle = rp.isIdle;
@@ -147,7 +151,7 @@ void World::Presenter(float delta)
             dest,
             {128, 128},
             0,
-            Fade(WHITE, 0.8f));
+            Fade(BLACK, 0.8f));
     }
 
     EndMode2D();

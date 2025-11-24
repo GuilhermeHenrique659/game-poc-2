@@ -20,6 +20,10 @@ struct RemotePlayer
     bool isLocal;
 };
 
+// std::unordered_map<uint32_t, NetPlayerState> players;
+// bool isServer = false;
+// uint32_t myPlayerId = 0;
+// uint32_t nextPlayerId = 1;
 class Network
 {
 public:
@@ -31,6 +35,7 @@ public:
     // Apenas no server
     std::unordered_map<uint32_t, RemotePlayer> players;
     uint32_t nextPlayerId = 1;
+    uint32_t myPlayerId = 0;
     uint32_t localPlayerId = 0;
 
     bool InitAsServer(uint16_t port = 5000);

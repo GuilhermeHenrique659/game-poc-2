@@ -52,17 +52,17 @@ void Menu::Setup()
 void Menu::Presenter(float delta)
 {
     DrawText("Menu Scene", 350, 200, 20, DARKGRAY);
-
     for (auto &button : buttons)
     {
-        button->Update();
+        button->Draw();
     }
 }
 
 void Menu::Update(float delta)
 {
+
     for (auto &button : buttons)
     {
-        button->Draw();
+        button->Update();
     }
 }
