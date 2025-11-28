@@ -34,15 +34,16 @@ public:
 
     void notify(const std::any &data)
     {
-        remotePlayers[2] = {
-            .id = 2,
+        uint32_t newId = remotePlayers.size() + 1;
+
+        remotePlayers[newId] = {
+            .id = newId,
             .position = Vector2{0, 0},
             .direction = DOWN,
             .isIdle = true,
             .angle = 0};
 
         const size_t dataSize = sizeof(PlayerMoved);
-        static_assert(dataSize <= 1024, "PlayerMoved too large");
 
         RemotePacket packet{};
         packet.eventId = 1;
@@ -53,13 +54,13 @@ public:
     }
 };
 
-class NewPlayerConnected : public Observer
+class IdAssigneed : public Observer
 {
 private:
     std::unordered_map<uint32_t, PlayerMoved> &remotePlayers;
 
 public:
-    NewPlayerConnected(std::unordered_map<uint32_t, PlayerMoved> &remotePlayers) : remotePlayers(remotePlayers) {}
+    IdAssigneed(std::unordered_map<uint32_t, PlayerMoved> &remotePlayers) : remotePlayers(remotePlayers) {}
 
     void notify(const std::any &data)
     {
@@ -67,11 +68,7 @@ public:
         PlayerMoved pm{};
         memcpy(&pm, pkg.data, sizeof(PlayerMoved));
 
-        TraceLog(LOG_INFO, "sizeof(PlayerMoved) = %d, id offset = %d",
-                 (int)sizeof(PlayerMoved), (int)offsetof(PlayerMoved, id));
-
-        TraceLog(LOG_INFO, "PlayerMoved: id=%u, pos.x=%f, pos.y=%f, dir=%u, isIdle=%u, angle=%f",
-                 pm.id, pm.position.x, pm.position.y, (unsigned)pm.direction, (unsigned)pm.isIdle, pm.angle);
+        TraceLog(LOG_INFO, "Id assigneed: %d", pm.id);
 
         remotePlayers[pm.id] = pm;
     }
@@ -96,7 +93,6 @@ void World::Setup()
     camera.rotation = 0.0f;
     camera.offset = {(float)GetScreenWidth() / 2.0f, (float)GetScreenHeight() / 2.0f - 128.0f};
     camera.target = player->position;
-    TraceLog(LOG_INFO, "render remote players: count: %d", remotePlayers.size());
 
     network.networkClient->subscribe("player_moved", std::make_unique<PlayerMovedObserver>(remotePlayers));
 }
@@ -128,7 +124,6 @@ void World::Update(float delta)
             .angle = player->angle};
 
         const size_t dataSize = sizeof(PlayerMoved);
-        static_assert(dataSize <= 1024, "PlayerMoved too large");
 
         RemotePacket packet{};
         packet.eventId = 1;
@@ -141,12 +136,6 @@ void World::Update(float delta)
 
     if (IsKeyPressed(KEY_H))
     {
-        remotePlayers[1] = {
-            .id = 1,
-            .position = player->position,
-            .direction = player->GetPlayerDirection(),
-            .isIdle = player->isIdle,
-            .angle = player->angle};
 
         TraceLog(LOG_INFO, "Start as host");
         StartHost(); // tecla H = host
@@ -155,16 +144,10 @@ void World::Update(float delta)
     }
     if (IsKeyPressed(KEY_C))
     {
-        remotePlayers[2] = {
-            .id = 2,
-            .position = player->position,
-            .direction = player->GetPlayerDirection(),
-            .isIdle = player->isIdle,
-            .angle = player->angle};
         TraceLog(LOG_INFO, "Try connect");
         ConnectToHost(); // tecla C = conectar em 127.0.0.1
 
-        network.networkClient->subscribe("id_assign", std::make_unique<NewPlayerConnected>(remotePlayers));
+        network.networkClient->subscribe("id_assign", std::make_unique<IdAssigneed>(remotePlayers));
     }
 
     if (!network.isServer)
@@ -210,7 +193,6 @@ void World::Presenter(float delta)
         }
     }
 
-    // Desenha o player local
     player->Animate();
     PlayerSpriteAnimation sprite = player->GetPlayerSprite();
 
@@ -224,12 +206,10 @@ void World::Presenter(float delta)
 
     if (!remotePlayers.empty())
     {
-        // calc ownId explicitamente (evita confusões de precedência)
         uint32_t ownId = network.isServer ? 1u : 2u;
 
         for (auto &[id, rp] : remotePlayers)
         {
-            // No cliente: pule o próprio player
             if (!network.isServer && id == ownId)
                 continue;
 

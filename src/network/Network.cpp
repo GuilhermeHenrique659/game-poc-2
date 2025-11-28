@@ -73,19 +73,17 @@ void Network::Update()
             const uint8_t *d = event.packet->data;
             size_t len = event.packet->dataLength;
 
-            if (len >= 4)
+            if (len >= ID_MEMORY_SIZE)
             {
                 RemotePacket pkt{};
 
-                // eventId
                 pkt.eventId = *(int32_t *)d;
 
-                // dados
-                size_t payload = len - 4;
+                size_t payload = len - ID_MEMORY_SIZE;
                 if (payload > sizeof(pkt.data))
                     payload = sizeof(pkt.data);
 
-                memcpy(pkt.data, d + 4, payload);
+                memcpy(pkt.data, d + ID_MEMORY_SIZE, payload);
 
                 networkClient->Handle(pkt.eventId, pkt);
 
@@ -94,9 +92,6 @@ void Network::Update()
                     ENetPacket *copy = enet_packet_create(d, len, 0);
                     enet_host_broadcast(host, 0, copy);
                 }
-
-                if (networkClient)
-                    networkClient->Handle(pkt.eventId, pkt);
             }
 
             enet_packet_destroy(event.packet);
