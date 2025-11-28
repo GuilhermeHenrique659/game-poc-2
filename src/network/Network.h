@@ -1,47 +1,27 @@
 #pragma once
 #include <raylib_win.h>
-#include <raylib.h>
+
 #include <enet/enet.h>
 #include <string>
 #include <vector>
 #include <unordered_map>
 #include <cstdint>
+#include "NetworkClient.h"
 
-#include "../entity/player/PlayerDirection.h"
-
-struct RemotePlayer
-{
-    uint32_t id;
-    Vector2 position;
-    PlayerDirection direction;
-    bool isIdle;
-    float angle;
-    ENetPeer *peer = nullptr;
-    bool isLocal;
-};
-
-// std::unordered_map<uint32_t, NetPlayerState> players;
-// bool isServer = false;
-// uint32_t myPlayerId = 0;
-// uint32_t nextPlayerId = 1;
 class Network
 {
+private:
 public:
+    std::shared_ptr<NetworkClient> networkClient = std::make_shared<NetworkClient>();
+
     bool isServer = false;
     ENetHost *host = nullptr;
     ENetAddress address;
     ENetEvent event;
 
-    // Apenas no server
-    std::unordered_map<uint32_t, RemotePlayer> players;
-    uint32_t nextPlayerId = 1;
-    uint32_t myPlayerId = 0;
-    uint32_t localPlayerId = 0;
-
     bool InitAsServer(uint16_t port = 5000);
     bool InitAsClient(const std::string &ip = "127.0.0.1", uint16_t port = 5000);
-    void Update(float delta);
-    void SendMyState(const Vector2 &pos, PlayerDirection dir, bool idle, float angle);
-    void BroadcastMyState(const Vector2 &pos, PlayerDirection dir, bool idle, float angle);
+    void Update();
+    void Send(RemotePacket *remotePacket, size_t dataSize);
     void Shutdown();
 };

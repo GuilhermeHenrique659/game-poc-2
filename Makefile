@@ -1,5 +1,5 @@
 CXX      = g++
-CXXFLAGS = -std=c++20 -Iinclude
+CXXFLAGS = -std=c++20 -g -O0 -Wall -Iinclude
 LDFLAGS  = -Llib
 
 # Windows (MinGW)
@@ -21,10 +21,10 @@ all: $(EXE)
 $(EXE): $(OBJ)
 	$(CXX) $(OBJ) -o $@ $(LDFLAGS) $(LDLIBS)
 	@echo "Compilou! Execute com: ./$(EXE)"
+	@echo "Para depurar: gdb ./$(EXE)"
 
-# Regra genérica para compilar .cpp → .o dentro de build/
 $(OBJ_DIR)/%.o: src/%.cpp
-	@mkdir -p $(dir $@)               # cria subpastas dentro de build/ automaticamente
+	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:

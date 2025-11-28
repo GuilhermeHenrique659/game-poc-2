@@ -3,8 +3,9 @@
 
 void Subject::_publish(const std::string &event, const std::any &data)
 {
-    // TraceLog(LOG_INFO, "Subject: Notifying observers about event '%s'.", event.c_str());
-
+    /*     TraceLog(LOG_INFO, "Subject: Notifying observers about event '%s'.", event.c_str());
+        TraceLog(LOG_INFO, "Subject: Notifying observers '%d'.", observers.size());
+     */
     if (observers.empty())
         return;
 
@@ -20,5 +21,6 @@ void Subject::_publish(const std::string &event, const std::any &data)
 
 void Subject::subscribe(const std::string &event, std::unique_ptr<Observer> observer)
 {
+    TraceLog(LOG_INFO, "Subject: Notifying observers about event '%s'", event.c_str());
     observers.emplace(event, std::move(observer));
 }

@@ -79,8 +79,6 @@ int main()
         }
     }
 
-    delete currentScene;
-
     CloseWindow();
     return 0;
 }
