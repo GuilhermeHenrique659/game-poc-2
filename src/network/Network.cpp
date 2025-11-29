@@ -137,3 +137,8 @@ void Network::Shutdown()
     enet_deinitialize();
     isServer = false;
 }
+
+void Network::addListner(const std::string &event, std::unique_ptr<Observer> observer)
+{
+    networkClient->subscribe(event, std::move(observer));
+}

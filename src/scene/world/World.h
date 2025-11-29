@@ -21,7 +21,7 @@ private:
     Camera2D camera = {0};
 
 public:
-    Network network;
+    Network *network;
     std::unordered_map<uint32_t, PlayerMoved> remotePlayers;
     std::unique_ptr<Player> remotePlayer;
 
@@ -29,7 +29,7 @@ public:
     bool isHost = false;
 
     World(
-        GameState &gameState) : Scene(gameState) {};
+        GameState &gameState, Network *network) : Scene(gameState), network(network) {};
     ~World() = default;
 
     void StartHost();

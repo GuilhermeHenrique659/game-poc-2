@@ -3,6 +3,13 @@
 #include <string>
 #include <unordered_map>
 
+enum EventName
+{
+    CONNECTION,
+    PLAYER_MOVED,
+    ID_ASSIGNEED,
+};
+
 struct EventDefinition
 {
     int id;

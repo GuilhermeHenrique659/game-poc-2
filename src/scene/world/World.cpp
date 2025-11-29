@@ -27,10 +27,10 @@ class OnConnected : public Observer
 {
 private:
     std::unordered_map<uint32_t, PlayerMoved> &remotePlayers;
-    Network &network;
+    Network *network;
 
 public:
-    OnConnected(std::unordered_map<uint32_t, PlayerMoved> &remotePlayers, Network &network) : remotePlayers(remotePlayers), network(network) {}
+    OnConnected(std::unordered_map<uint32_t, PlayerMoved> &remotePlayers, Network *network) : remotePlayers(remotePlayers), network(network) {}
 
     void notify(const std::any &data)
     {
@@ -50,7 +50,7 @@ public:
 
         memcpy(packet.data, &remotePlayers[2], dataSize);
 
-        network.Send(&packet, dataSize);
+        network->Send(&packet, dataSize);
     }
 };
 
@@ -94,13 +94,11 @@ void World::Setup()
     camera.offset = {(float)GetScreenWidth() / 2.0f, (float)GetScreenHeight() / 2.0f - 128.0f};
     camera.target = player->position;
 
-    network.networkClient->subscribe("player_moved", std::make_unique<PlayerMovedObserver>(remotePlayers));
+    network->addListner("player_moved", std::make_unique<PlayerMovedObserver>(remotePlayers));
 }
 
 void World::Update(float delta)
 {
-    network.Update();
-
     player->move(camera);
     camera.target = Vector2Lerp(camera.target, player->position, 5.0f * delta);
 
@@ -117,7 +115,7 @@ void World::Update(float delta)
     if (sendTimer > 1.0f / 40.0f)
     {
         PlayerMoved p = {
-            .id = network.isServer ? 1 : 2,
+            .id = network->isServer ? 1 : 2,
             .position = player->position,
             .direction = player->GetPlayerDirection(),
             .isIdle = player->isIdle,
@@ -130,7 +128,7 @@ void World::Update(float delta)
 
         memcpy(packet.data, &p, dataSize);
 
-        network.Send(&packet, dataSize);
+        network->Send(&packet, dataSize);
         sendTimer = 0;
     }
 
@@ -140,24 +138,24 @@ void World::Update(float delta)
         TraceLog(LOG_INFO, "Start as host");
         StartHost(); // tecla H = host
 
-        network.networkClient->subscribe("connection", std::make_unique<OnConnected>(remotePlayers, network));
+        network->addListner("connection", std::make_unique<OnConnected>(remotePlayers, network));
     }
     if (IsKeyPressed(KEY_C))
     {
         TraceLog(LOG_INFO, "Try connect");
         ConnectToHost(); // tecla C = conectar em 127.0.0.1
 
-        network.networkClient->subscribe("id_assign", std::make_unique<IdAssigneed>(remotePlayers));
+        network->addListner("id_assign", std::make_unique<IdAssigneed>(remotePlayers));
     }
 
-    if (!network.isServer)
+    if (!network->isServer)
     {
     }
 }
 
 void World::ConnectToHost()
 {
-    if (network.InitAsClient())
+    if (network->InitAsClient())
     {
         TraceLog(LOG_INFO, "Connect with success");
     };
@@ -165,12 +163,12 @@ void World::ConnectToHost()
 
 void World::StartHost()
 {
-    network.InitAsServer();
+    network->InitAsServer();
 }
 
 void World::Presenter(float delta)
 {
-    if (network.isServer)
+    if (network->isServer)
     {
         DrawText("HOSTING SERVER", 100, 100, 12, BLACK);
     }
@@ -206,11 +204,11 @@ void World::Presenter(float delta)
 
     if (!remotePlayers.empty())
     {
-        uint32_t ownId = network.isServer ? 1u : 2u;
+        uint32_t ownId = network->isServer ? 1u : 2u;
 
         for (auto &[id, rp] : remotePlayers)
         {
-            if (!network.isServer && id == ownId)
+            if (!network->isServer && id == ownId)
                 continue;
 
             Rectangle dest = {rp.position.x, rp.position.y, 256, 256};

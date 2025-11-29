@@ -11,9 +11,9 @@
 class Network
 {
 private:
-public:
     std::shared_ptr<NetworkClient> networkClient = std::make_shared<NetworkClient>();
 
+public:
     bool isServer = false;
     ENetHost *host = nullptr;
     ENetAddress address;
@@ -24,4 +24,6 @@ public:
     void Update();
     void Send(RemotePacket *remotePacket, size_t dataSize);
     void Shutdown();
+
+    void addListner(const std::string &event, std::unique_ptr<Observer> observer);
 };

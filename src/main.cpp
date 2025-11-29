@@ -21,6 +21,8 @@ int main()
 {
     const int screenWidth = 1270;
     const int screenHeight = 720;
+
+    Network *network = new Network();
     std::unordered_map<std::string, std::unique_ptr<Scene>> scenes;
 
     GameState gameState = {
@@ -46,7 +48,7 @@ int main()
     resourceManager.RegisterTexture("floor", "resources/sprites/floor.png");
 
     scenes["menu"] = std::make_unique<Menu>(gameState);
-    scenes["world"] = std::make_unique<World>(gameState);
+    scenes["world"] = std::make_unique<World>(gameState, network);
 
     std::unique_ptr<Scene> *currentScene = &scenes["menu"];
 
@@ -57,6 +59,7 @@ int main()
 
     while (!WindowShouldClose())
     {
+        network->Update();
         if (gameState.currentScene == "world")
         {
             currentScene = &scenes["world"];
@@ -80,5 +83,7 @@ int main()
     }
 
     CloseWindow();
+    delete network;
+
     return 0;
 }
