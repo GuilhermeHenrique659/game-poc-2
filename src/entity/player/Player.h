@@ -1,3 +1,4 @@
+#pragma once
 #include "../../common/Subject.h"
 #include "raylib.h"
 #include "PlayerSpriteAnimation.h"

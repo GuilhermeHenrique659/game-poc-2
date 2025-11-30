@@ -2,20 +2,35 @@
 
 std::shared_ptr<Player> EntityManager::getPlayer(uint32_t id)
 {
-    if (players.empty())
-        return;
-
-    auto it = players.find(id);
-    if (it == players.end())
-        return;
-
-    if (it != players.end())
-    {
-        return it->second;
-    }
+    /*     TraceLog(LOG_INFO, "id: %d", id);
+        TraceLog(LOG_INFO, "count: %d", players.size()); */
+    return players[id];
 }
 
-void EntityManager::createPlayer(Vector2 position)
+std::unordered_map<uint32_t, std::shared_ptr<Player>> EntityManager::getPlayers()
+{
+    return players;
+}
+
+void EntityManager::updatePlayer(PlayerDto data)
+{
+    if (players.find(data.id) == players.end())
+    {
+        createPlayer({0, 0}, data.id);
+    }
+
+    auto player = players[data.id];
+
+    Rectangle dest = {data.position.x, data.position.y, 256, 256};
+
+    player->position = data.position;
+    player->destRec = dest;
+    player->SetPlayerDirection(static_cast<PlayerDirection>(data.direction));
+    player->angle = data.angle;
+    player->isIdle = data.isIdle;
+}
+
+uint32_t EntityManager::createPlayer(Vector2 position, uint32_t id)
 {
     Rectangle destRec = {
         position.x,
@@ -28,9 +43,22 @@ void EntityManager::createPlayer(Vector2 position)
         destRec,
         PlayerSpriteAnimation());
 
-    uint32_t newId = players.size() + 1;
+    uint32_t newId;
+    TraceLog(LOG_INFO, "id passed: %d", id);
 
+    if (id > 0)
+    {
+        newId = id;
+    }
+    else
+    {
+        newId = players.size() + 1;
+    }
+
+    TraceLog(LOG_INFO, "Player Create with id: %d", newId);
     players[newId] = player;
+
+    return newId;
 }
 
 void EntityManager::broadcastPlayer(EventName event, PlayerDto player)
@@ -44,4 +72,9 @@ void EntityManager::broadcastPlayer(EventName event, PlayerDto player)
     memcpy(packet.data, &player, dataSize);
 
     network->Send(&packet, dataSize);
+}
+
+void EntityManager::addListner(const std::string &event, std::unique_ptr<Observer> observer)
+{
+    network->addListner(event, std::move(observer));
 }

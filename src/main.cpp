@@ -23,6 +23,8 @@ int main()
     const int screenHeight = 720;
 
     Network *network = new Network();
+    EntityManager *entityManager = new EntityManager(network);
+
     std::unordered_map<std::string, std::unique_ptr<Scene>> scenes;
 
     GameState gameState = {
@@ -48,7 +50,7 @@ int main()
     resourceManager.RegisterTexture("floor", "resources/sprites/floor.png");
 
     scenes["menu"] = std::make_unique<Menu>(gameState);
-    scenes["world"] = std::make_unique<World>(gameState, network);
+    scenes["world"] = std::make_unique<World>(gameState, entityManager, network);
 
     std::unique_ptr<Scene> *currentScene = &scenes["menu"];
 
@@ -83,7 +85,6 @@ int main()
     }
 
     CloseWindow();
-    delete network;
 
     return 0;
 }

@@ -8,69 +8,75 @@
 class PlayerMovedObserver : public Observer
 {
 private:
-    std::unordered_map<uint32_t, PlayerMoved> &remotePlayers;
+    EntityManager *entityManager;
 
 public:
-    PlayerMovedObserver(std::unordered_map<uint32_t, PlayerMoved> &remotePlayers) : remotePlayers(remotePlayers) {}
+    PlayerMovedObserver(EntityManager *entityManager) : entityManager(entityManager) {}
 
     void notify(const std::any &data)
     {
         RemotePacket pkg = std::any_cast<RemotePacket>(data);
-        PlayerMoved pm{};
-        memcpy(&pm, pkg.data, sizeof(PlayerMoved));
+        PlayerDto pm{};
+        memcpy(&pm, pkg.data, sizeof(PlayerDto));
 
-        remotePlayers[pm.id] = pm;
+        if (pm.id != entityManager->currentPlayerId)
+        {
+            entityManager->updatePlayer(pm);
+        }
     }
 };
 
 class OnConnected : public Observer
 {
 private:
-    std::unordered_map<uint32_t, PlayerMoved> &remotePlayers;
-    Network *network;
+    EntityManager *entityManager;
 
 public:
-    OnConnected(std::unordered_map<uint32_t, PlayerMoved> &remotePlayers, Network *network) : remotePlayers(remotePlayers), network(network) {}
+    OnConnected(EntityManager *entityManager) : entityManager(entityManager) {}
 
     void notify(const std::any &data)
     {
-        uint32_t newId = remotePlayers.size() + 1;
+        uint32_t clientId = entityManager->createPlayer({0, 0}, 0);
 
-        remotePlayers[newId] = {
-            .id = newId,
-            .position = Vector2{0, 0},
-            .direction = DOWN,
-            .isIdle = true,
-            .angle = 0};
+        std::shared_ptr<Player> clientPlayer = entityManager->getPlayer(clientId);
 
-        const size_t dataSize = sizeof(PlayerMoved);
+        PlayerDto clientDto = {
+            .id = clientId,
+            .position = clientPlayer->position,
+            .direction = clientPlayer->GetPlayerDirection(),
+            .isIdle = clientPlayer->isIdle,
+            .angle = clientPlayer->angle};
 
-        RemotePacket packet{};
-        packet.eventId = 1;
-
-        memcpy(packet.data, &remotePlayers[2], dataSize);
-
-        network->Send(&packet, dataSize);
+        TraceLog(LOG_INFO, "Host assigned ID %d to new client", clientId);
+        entityManager->broadcastPlayer(EventName::ID_ASSIGNEED, clientDto);
     }
 };
 
 class IdAssigneed : public Observer
 {
 private:
-    std::unordered_map<uint32_t, PlayerMoved> &remotePlayers;
+    EntityManager *entityManager;
 
 public:
-    IdAssigneed(std::unordered_map<uint32_t, PlayerMoved> &remotePlayers) : remotePlayers(remotePlayers) {}
+    IdAssigneed(EntityManager *entityManager) : entityManager(entityManager) {}
 
     void notify(const std::any &data)
     {
         RemotePacket pkg = std::any_cast<RemotePacket>(data);
-        PlayerMoved pm{};
-        memcpy(&pm, pkg.data, sizeof(PlayerMoved));
+        PlayerDto pm{};
+        memcpy(&pm, pkg.data, sizeof(PlayerDto));
 
-        TraceLog(LOG_INFO, "Id assigneed: %d", pm.id);
+        entityManager->getPlayers().erase(entityManager->currentPlayerId);
+        entityManager->getPlayers().erase(pm.id);
 
-        remotePlayers[pm.id] = pm;
+        entityManager->currentPlayerId = pm.id;
+
+        TraceLog(LOG_INFO, "Client: Id assigneed to %d", pm.id);
+
+        auto createId = entityManager->createPlayer(pm.position, entityManager->currentPlayerId);
+
+        TraceLog(LOG_INFO, "Create: %d", createId);
+        TraceLog(LOG_INFO, "Client: myPlayerId changed to %d", pm.id);
     }
 };
 
@@ -78,27 +84,20 @@ void World::Setup()
 {
     Vector2 startPos = IsoWorldToScreen(GetScreenWidth() / 2.0f / 256.0f, GetScreenHeight() / 2.0f / 128.0f);
 
-    Rectangle destRec = {
-        startPos.x,
-        startPos.y,
-        256.0f,
-        256.0f};
-
-    player = std::make_unique<Player>(
-        startPos,
-        destRec,
-        PlayerSpriteAnimation());
+    auto playerId = entityManager->createPlayer(startPos, 0);
+    entityManager->currentPlayerId = playerId;
 
     camera.zoom = 1.0f;
     camera.rotation = 0.0f;
     camera.offset = {(float)GetScreenWidth() / 2.0f, (float)GetScreenHeight() / 2.0f - 128.0f};
-    camera.target = player->position;
+    camera.target = entityManager->getPlayer(playerId)->position;
 
-    network->addListner("player_moved", std::make_unique<PlayerMovedObserver>(remotePlayers));
+    entityManager->addListner("player_moved", std::make_unique<PlayerMovedObserver>(entityManager));
 }
 
 void World::Update(float delta)
 {
+    std::shared_ptr<Player> player = entityManager->getPlayer(entityManager->currentPlayerId);
     player->move(camera);
     camera.target = Vector2Lerp(camera.target, player->position, 5.0f * delta);
 
@@ -114,21 +113,11 @@ void World::Update(float delta)
 
     if (sendTimer > 1.0f / 40.0f)
     {
-        PlayerMoved p = {
-            .id = network->isServer ? 1 : 2,
-            .position = player->position,
-            .direction = player->GetPlayerDirection(),
-            .isIdle = player->isIdle,
-            .angle = player->angle};
-
-        const size_t dataSize = sizeof(PlayerMoved);
-
-        RemotePacket packet{};
-        packet.eventId = 1;
-
-        memcpy(packet.data, &p, dataSize);
-
-        network->Send(&packet, dataSize);
+        entityManager->broadcastPlayer(EventName::PLAYER_MOVED, {.id = entityManager->currentPlayerId,
+                                                                 .position = player->position,
+                                                                 .direction = player->GetPlayerDirection(),
+                                                                 .isIdle = player->isIdle,
+                                                                 .angle = player->angle});
         sendTimer = 0;
     }
 
@@ -138,18 +127,14 @@ void World::Update(float delta)
         TraceLog(LOG_INFO, "Start as host");
         StartHost(); // tecla H = host
 
-        network->addListner("connection", std::make_unique<OnConnected>(remotePlayers, network));
+        entityManager->addListner("connection", std::make_unique<OnConnected>(entityManager));
     }
     if (IsKeyPressed(KEY_C))
     {
         TraceLog(LOG_INFO, "Try connect");
         ConnectToHost(); // tecla C = conectar em 127.0.0.1
 
-        network->addListner("id_assign", std::make_unique<IdAssigneed>(remotePlayers));
-    }
-
-    if (!network->isServer)
-    {
+        entityManager->addListner("id_assign", std::make_unique<IdAssigneed>(entityManager));
     }
 }
 
@@ -172,6 +157,8 @@ void World::Presenter(float delta)
     {
         DrawText("HOSTING SERVER", 100, 100, 12, BLACK);
     }
+
+    std::shared_ptr<Player> player = entityManager->getPlayer(entityManager->currentPlayerId);
 
     BeginMode2D(camera);
     for (int i = 0; i < 10; i++)
@@ -202,35 +189,23 @@ void World::Presenter(float delta)
         0.0f,
         WHITE);
 
-    if (!remotePlayers.empty())
+    if (!entityManager->getPlayers().empty())
     {
-        uint32_t ownId = network->isServer ? 1u : 2u;
-
-        for (auto &[id, rp] : remotePlayers)
+        for (auto &[id, rp] : entityManager->getPlayers())
         {
-            if (!network->isServer && id == ownId)
+            if (!network->isServer && id == entityManager->currentPlayerId)
                 continue;
 
-            Rectangle dest = {rp.position.x, rp.position.y, 256, 256};
+            if (network->isServer && id == entityManager->currentPlayerId)
+                continue;
 
-            if (!remotePlayer)
-            {
-                remotePlayer = std::make_unique<Player>(rp.position, dest, PlayerSpriteAnimation());
-            }
-
-            remotePlayer->position = rp.position;
-            remotePlayer->destRec = dest;
-            remotePlayer->SetPlayerDirection(static_cast<PlayerDirection>(rp.direction));
-            remotePlayer->angle = rp.angle;
-            remotePlayer->isIdle = rp.isIdle;
-
-            remotePlayer->Animate();
-            PlayerSpriteAnimation remoteSprite = remotePlayer->GetPlayerSprite();
+            rp->Animate();
+            PlayerSpriteAnimation remoteSprite = rp->GetPlayerSprite();
 
             DrawTexturePro(
                 remoteSprite.GetCurrentTexture(),
                 remoteSprite.GetSourceRectangle(),
-                dest,
+                rp->destRec,
                 {128, 128},
                 0,
                 Fade(RED, 0.8f));
