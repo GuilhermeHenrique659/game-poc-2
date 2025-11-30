@@ -1,11 +1,7 @@
 #include "Player.h"
 #include "raymath.h"
 #include "../../common/util/VectorUtil.h"
-
-static const float COLLISION_OFFSET_X = 0.39f; // 39% da largura (100/256)
-static const float COLLISION_OFFSET_Y = 0.64f; // 64% da altura (307.2/512)
-static const float COLLISION_WIDTH = 0.31f;    // 31% da largura (80/256)
-static const float COLLISION_HEIGHT = 0.25f;   // 39% da altura (200/512)
+#include "../../config.h"
 
 PlayerSpriteAnimation Player::GetPlayerSprite()
 {

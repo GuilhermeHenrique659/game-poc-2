@@ -1,4 +1,5 @@
 #include "EntityManager.h"
+#include "../config.h"
 
 std::shared_ptr<Player> EntityManager::getPlayer(uint32_t id)
 {
@@ -32,8 +33,8 @@ uint32_t EntityManager::createPlayer(Vector2 position, uint32_t id)
     Rectangle destRec = {
         position.x,
         position.y,
-        256.0f,
-        512.0f};
+        SPRITE_WIDHT,
+        SPRITEH_HEIGHT};
 
     auto player = std::make_shared<Player>(
         position,
