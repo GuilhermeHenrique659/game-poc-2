@@ -2,6 +2,7 @@
 #include "raylib.h"
 #include "../../common/ResourceManager.h"
 #include "PlayerDirection.h"
+#include "PlayerState.h"
 
 class PlayerSpriteAnimation
 {
@@ -15,7 +16,7 @@ public:
     PlayerSpriteAnimation() = default;
     ~PlayerSpriteAnimation() = default;
 
-    void Animate(PlayerDirection playerDirection, bool isIdle);
+    void Animate(PlayerDirection playerDirection, PlayerState state);
 
     Rectangle GetSourceRectangle();
     Texture2D GetCurrentTexture();

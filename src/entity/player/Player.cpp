@@ -13,6 +13,16 @@ PlayerDirection Player::GetPlayerDirection()
     return playerDirection;
 }
 
+PlayerState Player::GetPlayerState()
+{
+    return playerState;
+}
+
+void Player::SetPlayerState(PlayerState state)
+{
+    playerState = state;
+}
+
 Vector2 Player::GetPosition()
 {
     return position;
@@ -106,12 +116,12 @@ void Player::move(Camera2D camera, std::vector<Rectangle> collisionRectangles)
 
     if (!Vector2Equals(oldPosition, position))
     {
-        isIdle = false;
+        playerState = RUN;
         _publish("moved", std::any(position));
     }
     else
     {
-        isIdle = true;
+        playerState = IDLE;
     }
 }
 
@@ -148,7 +158,7 @@ void Player::SetPlayerDirection(PlayerDirection newPlayerDirection)
 
 void Player::Animate()
 {
-    playerSpriteAnimation.Animate(playerDirection, isIdle);
+    playerSpriteAnimation.Animate(playerDirection, playerState);
 }
 
 Vector2 Player::NormalizeMove(Vector2 &moveDir)

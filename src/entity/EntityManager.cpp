@@ -25,7 +25,7 @@ void EntityManager::updatePlayer(PlayerDto data)
     player->UpdatePosition(data.position);
     player->SetPlayerDirection(static_cast<PlayerDirection>(data.direction));
     player->angle = data.angle;
-    player->isIdle = data.isIdle;
+    player->SetPlayerState(data.state);
 }
 
 uint32_t EntityManager::createPlayer(Vector2 position, uint32_t id)
@@ -33,8 +33,8 @@ uint32_t EntityManager::createPlayer(Vector2 position, uint32_t id)
     Rectangle destRec = {
         position.x,
         position.y,
-        SPRITE_WIDHT,
-        SPRITEH_HEIGHT};
+        SPRITE_FRAME_WIDHT,
+        SPRITEH_FRAME_HEIGHT};
 
     auto player = std::make_shared<Player>(
         position,

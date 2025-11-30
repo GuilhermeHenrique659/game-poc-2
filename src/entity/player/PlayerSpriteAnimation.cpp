@@ -1,4 +1,30 @@
 #include "PlayerSpriteAnimation.h"
+#include "../../config.h"
+#include "math.h"
+
+struct SpriteSheetInfo
+{
+    int totalFrames;
+    int columns;
+    int rows;
+    float frameWidth;
+    float frameHeight;
+};
+
+SpriteSheetInfo CalculateSpriteSheet(Texture2D texture, int totalFrames)
+{
+    SpriteSheetInfo info;
+    info.totalFrames = totalFrames;
+
+    // CALCULA COLUNAS E LINHAS AUTOMATICAMENTE
+    info.columns = (int)sqrtf(totalFrames); // √24 ≈ 6
+    info.rows = totalFrames / info.columns; // 24 ÷ 6 = 4
+
+    info.frameWidth = (float)texture.width / info.columns;
+    info.frameHeight = (float)texture.height / info.rows;
+
+    return info;
+}
 
 float GetFrameWidth(Texture2D texture, float frameCount)
 {
@@ -15,56 +41,128 @@ Texture2D PlayerSpriteAnimation::GetCurrentTexture()
     return currentTexture;
 }
 
-void PlayerSpriteAnimation::Animate(PlayerDirection playerDirection, bool isIdle)
+void PlayerSpriteAnimation::Animate(PlayerDirection playerDirection, PlayerState state)
 {
-    const float runningFrameCount = 10.0f;
-    const float idleFrameCount = 8.0f;
+    int totalFrames;
 
-    if (isIdle)
+    switch (state)
     {
-        currentTexture = ResourceManager::Get().GetTexture("idle_sheet");
-        sourceRectangle = {GetFrameWidth(currentTexture, idleFrameCount) * playerDirection, 0.0f, GetFrameWidth(currentTexture, idleFrameCount), (float)currentTexture.height};
-        return;
+    case PlayerState::IDLE:
+        totalFrames = 16;
+        break;
+    case PlayerState::RUN:
+        totalFrames = 15;
+        break;
+    case PlayerState::ATTACK:
+    default:
+        totalFrames = 16;
+        break;
     }
+
+    const float frameTime = 0.08f;
+
+    std::string textureKey = "idle_stand_down";
 
     switch (playerDirection)
     {
     case PlayerDirection::RIGHT:
-        currentTexture = ResourceManager::Get().GetTexture("run_right");
+        if (state == IDLE)
+            textureKey = "idle_stand_right";
+        else if (state == ATTACK)
+            textureKey = "attack_right";
+        else
+            textureKey = "run_right";
         break;
     case PlayerDirection::Right_DOWN:
-        currentTexture = ResourceManager::Get().GetTexture("run_right_down");
+        if (state == IDLE)
+            textureKey = "idle_stand_down_right";
+        else if (state == ATTACK)
+            textureKey = "attack_right_down";
+        else
+            textureKey = "run_right_down";
         break;
     case PlayerDirection::DOWN:
-        currentTexture = ResourceManager::Get().GetTexture("run_down");
+        if (state == IDLE)
+            textureKey = "idle_stand_down";
+        else if (state == ATTACK)
+            textureKey = "attack_down";
+        else
+            textureKey = "run_down";
         break;
     case PlayerDirection::LEFT_DOWN:
-        currentTexture = ResourceManager::Get().GetTexture("run_left_down");
+        if (state == IDLE)
+            textureKey = "idle_stand_down_left";
+        else if (state == ATTACK)
+            textureKey = "attack_left_down";
+        else
+            textureKey = "run_left_down";
         break;
     case PlayerDirection::LEFT:
-        currentTexture = ResourceManager::Get().GetTexture("run_left");
+        if (state == IDLE)
+            textureKey = "idle_stand_left";
+        else if (state == ATTACK)
+            textureKey = "attack_left";
+        else
+            textureKey = "run_left";
         break;
     case PlayerDirection::LEFT_UP:
-        currentTexture = ResourceManager::Get().GetTexture("run_left_up");
+        if (state == IDLE)
+            textureKey = "idle_stand_up_left";
+        else if (state == ATTACK)
+            textureKey = "attack_left_up";
+        else
+            textureKey = "run_left_up";
         break;
     case PlayerDirection::UP:
-        currentTexture = ResourceManager::Get().GetTexture("run_up");
+        if (state == IDLE)
+            textureKey = "idle_stand_up";
+        else if (state == ATTACK)
+            textureKey = "attack_up";
+        else
+            textureKey = "run_up";
         break;
     case PlayerDirection::RIGHT_UP:
-        currentTexture = ResourceManager::Get().GetTexture("run_right_up");
+        if (state == IDLE)
+            textureKey = "idle_stand_up_right";
+        else if (state == ATTACK)
+            textureKey = "attack_right_up";
+        else
+            textureKey = "run_right_up";
         break;
     default:
-        currentTexture = ResourceManager::Get().GetTexture("run_down");
+        if (state == IDLE)
+            textureKey = "idle_stand_down";
+        else if (state == ATTACK)
+            textureKey = "attack_down";
+        else
+            textureKey = "run_down";
         break;
     }
 
-    runningTime += GetFrameTime();
-    if (runningTime >= 0.08f) // velocidade da animação (8 frames = ~0.64s total)
-    {
+    currentTexture = ResourceManager::Get().GetTexture(textureKey);
 
+    SpriteSheetInfo sheet = CalculateSpriteSheet(currentTexture, totalFrames);
+    const int columns = sheet.columns;
+    const int rows = sheet.rows;
+
+    runningTime += GetFrameTime();
+    if (runningTime >= frameTime)
+    {
         runningTime = 0.0f;
-        currentFrame = (currentFrame + 1) % (int)runningFrameCount;
+
+        currentFrame++;
+        if (currentFrame >= totalFrames)
+        {
+            currentFrame = 0;
+        }
     }
 
-    sourceRectangle = {GetFrameWidth(currentTexture, runningFrameCount) * currentFrame, 0.0f, GetFrameWidth(currentTexture, runningFrameCount), (float)currentTexture.height};
+    int columnFrame = currentFrame % columns;
+    int rowFrame = currentFrame / columns;
+
+    sourceRectangle = {
+        SPRITE_FRAME_WIDHT * columnFrame,
+        SPRITEH_FRAME_HEIGHT * rowFrame,
+        SPRITE_FRAME_WIDHT,
+        SPRITEH_FRAME_HEIGHT};
 }

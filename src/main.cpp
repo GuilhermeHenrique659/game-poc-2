@@ -37,15 +37,32 @@ int main()
 
     ResourceManager &resourceManager = ResourceManager::Get();
 
-    resourceManager.RegisterTexture("run_down", "resources/sprites/down.png");
-    resourceManager.RegisterTexture("run_up", "resources/sprites/up.png");
-    resourceManager.RegisterTexture("run_left", "resources/sprites/left.png");
-    resourceManager.RegisterTexture("run_right", "resources/sprites/right.png");
-    resourceManager.RegisterTexture("run_left_up", "resources/sprites/left_up.png");
-    resourceManager.RegisterTexture("run_right_up", "resources/sprites/right_up.png");
-    resourceManager.RegisterTexture("run_left_down", "resources/sprites/left_down.png");
-    resourceManager.RegisterTexture("run_right_down", "resources/sprites/right_down.png");
-    resourceManager.RegisterTexture("idle_sheet", "resources/sprites/idle_sheet.png");
+    resourceManager.RegisterTexture("run_down", "resources/sprites/char/run/Run_Down.png");
+    resourceManager.RegisterTexture("run_up", "resources/sprites/char/run/Run_Up.png");
+    resourceManager.RegisterTexture("run_left", "resources/sprites/char/run/Run_Left.png");
+    resourceManager.RegisterTexture("run_right", "resources/sprites/char/run/Run_Right.png");
+    resourceManager.RegisterTexture("run_left_up", "resources/sprites/char/run/Run_Left_Up.png");
+    resourceManager.RegisterTexture("run_right_up", "resources/sprites/char/run/Run_Right_Up.png");
+    resourceManager.RegisterTexture("run_left_down", "resources/sprites/char/run/Run_Down_Left.png");
+    resourceManager.RegisterTexture("run_right_down", "resources/sprites/char/run/Run_Down_Right.png");
+
+    resourceManager.RegisterTexture("idle_stand_up", "resources/sprites/char/idle_stand/Idle_Stand_Up.png");
+    resourceManager.RegisterTexture("idle_stand_up_right", "resources/sprites/char/idle_stand/Idle_Stand_Up_Right.png");
+    resourceManager.RegisterTexture("idle_stand_right", "resources/sprites/char/idle_stand/Idle_Stand_Right.png");
+    resourceManager.RegisterTexture("idle_stand_down_right", "resources/sprites/char/idle_stand/Idle_Stand_Down_Right.png");
+    resourceManager.RegisterTexture("idle_stand_down", "resources/sprites/char/idle_stand/Idle_Stand_Down.png");
+    resourceManager.RegisterTexture("idle_stand_down_left", "resources/sprites/char/idle_stand/Idle_Stand_Down_Left.png");
+    resourceManager.RegisterTexture("idle_stand_left", "resources/sprites/char/idle_stand/Idle_Stand_Left.png");
+    resourceManager.RegisterTexture("idle_stand_up_left", "resources/sprites/char/idle_stand/Idle_Stand_Up_Left.png");
+
+    resourceManager.RegisterTexture("attack_down", "resources/sprites/char/attack/Attack_01_Down.png");
+    resourceManager.RegisterTexture("attack_up", "resources/sprites/char/attack/Attack_01_Up.png");
+    resourceManager.RegisterTexture("attack_left", "resources/sprites/char/attack/Attack_01_Left.png");
+    resourceManager.RegisterTexture("attack_right", "resources/sprites/char/attack/Attack_01_Right.png");
+    resourceManager.RegisterTexture("attack_left_up", "resources/sprites/char/attack/Attack_01_Left_Up.png");
+    resourceManager.RegisterTexture("attack_right_up", "resources/sprites/char/attack/Attack_01_Right_Up.png");
+    resourceManager.RegisterTexture("attack_left_down", "resources/sprites/char/attack/Attack_01_Down_Left.png");
+    resourceManager.RegisterTexture("attack_right_down", "resources/sprites/char/attack/Attack_01_Down_Right.png");
 
     resourceManager.RegisterTexture("floor", "resources/sprites/floor.png");
 

@@ -45,7 +45,7 @@ public:
             .id = clientId,
             .position = clientPlayer->GetPosition(),
             .direction = clientPlayer->GetPlayerDirection(),
-            .isIdle = clientPlayer->isIdle,
+            .state = clientPlayer->GetPlayerState(),
             .angle = clientPlayer->angle};
 
         TraceLog(LOG_INFO, "Host assigned ID %d to new client", clientId);
@@ -82,7 +82,7 @@ public:
 
 void World::Setup()
 {
-    Vector2 startPos = IsoWorldToScreen(GetScreenWidth() / 2.0f / SPRITE_WIDHT, GetScreenHeight() / 2.0f / SPRITE_WIDHT);
+    Vector2 startPos = IsoWorldToScreen(GetScreenWidth() / 2.0f / SPRITE_FRAME_WIDHT, GetScreenHeight() / 2.0f / SPRITE_FRAME_WIDHT);
 
     auto playerId = entityManager->createPlayer(startPos, 0);
     entityManager->currentPlayerId = playerId;
@@ -93,7 +93,7 @@ void World::Setup()
     camera.zoom = 1.0f;
     camera.rotation = 0.0f;
     camera.offset = {(float)GetScreenWidth() / 2.0f, (float)GetScreenHeight() / 2.0f};
-    camera.target = Vector2{player->GetPosition().x + SPRITE_WIDHT / 2, player->GetPosition().y - SPRITEH_HEIGHT / 2};
+    camera.target = Vector2{player->GetPosition().x + SPRITE_FRAME_WIDHT / 2, player->GetPosition().y - SPRITEH_FRAME_HEIGHT / 2};
 }
 
 void World::Update(float delta)
@@ -113,7 +113,7 @@ void World::Update(float delta)
 
     Vector2 cameraTarget = Vector2{
         player->GetPosition().x + player->GetDestReactangle().width / 2,
-        player->GetPosition().y + player->GetDestReactangle().height - SPRITEH_HEIGHT / 4};
+        player->GetPosition().y + player->GetDestReactangle().height - SPRITEH_FRAME_HEIGHT / 4};
     camera.target = Vector2Lerp(camera.target, cameraTarget, 5.0f * delta);
 
     camera.zoom = expf(logf(camera.zoom) + ((float)GetMouseWheelMove() * 0.1f));
@@ -131,7 +131,7 @@ void World::Update(float delta)
         entityManager->broadcastPlayer(EventName::PLAYER_MOVED, {.id = entityManager->currentPlayerId,
                                                                  .position = player->GetPosition(),
                                                                  .direction = player->GetPlayerDirection(),
-                                                                 .isIdle = player->isIdle,
+                                                                 .state = player->GetPlayerState(),
                                                                  .angle = player->angle});
         sendTimer = 0;
     }
@@ -186,7 +186,7 @@ void World::Presenter(float delta)
             DrawTexturePro(
                 background,
                 {0.0f, 0.0f, (float)background.width, (float)background.height},
-                {(float)(gridPostion.x), (float)(gridPostion.y), SPRITE_WIDHT, SPRITEH_HEIGHT},
+                {(float)(gridPostion.x), (float)(gridPostion.y), SPRITE_FRAME_WIDHT, SPRITEH_FRAME_HEIGHT},
                 {0, 0},
                 0.0f,
                 WHITE);
