@@ -2,6 +2,11 @@
 #include "raymath.h"
 #include "../../common/util/VectorUtil.h"
 
+static const float COLLISION_OFFSET_X = 0.39f; // 39% da largura (100/256)
+static const float COLLISION_OFFSET_Y = 0.64f; // 64% da altura (307.2/512)
+static const float COLLISION_WIDTH = 0.31f;    // 31% da largura (80/256)
+static const float COLLISION_HEIGHT = 0.25f;   // 39% da altura (200/512)
+
 PlayerSpriteAnimation Player::GetPlayerSprite()
 {
     return playerSpriteAnimation;
@@ -12,7 +17,49 @@ PlayerDirection Player::GetPlayerDirection()
     return playerDirection;
 }
 
-void Player::move(Camera2D camera)
+Vector2 Player::GetPosition()
+{
+    return position;
+}
+
+Rectangle &Player::GetCollisionRectangle()
+{
+    return collisionRectangle;
+}
+
+Rectangle Player::GetDestReactangle()
+{
+    return destRec;
+}
+
+void Player::UpdatePosition(Vector2 newPosition)
+{
+    position = newPosition;
+    destRec.x = position.x;
+    destRec.y = position.y;
+
+    UpdateCollisionRectangle();
+}
+
+void Player::UpdateCollisionRectangle()
+{
+    collisionRectangle.x = position.x + (destRec.width * COLLISION_OFFSET_X);
+    collisionRectangle.y = position.y + (destRec.height * COLLISION_OFFSET_Y);
+    collisionRectangle.width = destRec.width * COLLISION_WIDTH;
+    collisionRectangle.height = destRec.height * COLLISION_HEIGHT;
+}
+
+Rectangle Player::GetFutureCollisionRectangle(Vector2 futurePosition) const
+{
+    Rectangle futureRect;
+    futureRect.x = futurePosition.x + (destRec.width * COLLISION_OFFSET_X);
+    futureRect.y = futurePosition.y + (destRec.height * COLLISION_OFFSET_Y);
+    futureRect.width = destRec.width * COLLISION_WIDTH;
+    futureRect.height = destRec.height * COLLISION_HEIGHT;
+    return futureRect;
+}
+
+void Player::move(Camera2D camera, std::vector<Rectangle> collisionRectangles)
 {
 
     Vector2 oldPosition = position;
@@ -39,14 +86,27 @@ void Player::move(Camera2D camera)
         moveDir.y += -1;
     }
 
-    NormalizeMove(moveDir);
+    auto newPosition = NormalizeMove(moveDir);
 
     CalculateAngle(camera, moveDir);
 
     playerDirection = static_cast<PlayerDirection>(CalculateDirection());
+    Rectangle futureCollisionRect = GetFutureCollisionRectangle(newPosition);
 
-    destRec.x = position.x - destRec.width * 0.5f;
-    destRec.y = position.y - destRec.height * 0.5f;
+    bool canMove = true;
+    for (const auto &rect : collisionRectangles)
+    {
+        if (CheckCollisionRecs(futureCollisionRect, rect))
+        {
+            canMove = false;
+            break;
+        }
+    }
+
+    if (canMove)
+    {
+        UpdatePosition(newPosition);
+    }
 
     if (!Vector2Equals(oldPosition, position))
     {
@@ -95,16 +155,19 @@ void Player::Animate()
     playerSpriteAnimation.Animate(playerDirection, isIdle);
 }
 
-void Player::NormalizeMove(Vector2 &moveDir)
+Vector2 Player::NormalizeMove(Vector2 &moveDir)
 {
     const float speed = 5.0f;
     moveDir = ToIso(moveDir);
 
     if (moveDir.x == 0 && moveDir.y == 0)
-        return;
+        return Vector2{
+            position.x,
+            position.y};
 
     NormalizeVectorInIso(moveDir);
 
-    position.x += moveDir.x * speed;
-    position.y += moveDir.y * speed;
+    return Vector2{
+        position.x + moveDir.x * speed,
+        position.y + moveDir.y * speed};
 }

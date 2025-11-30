@@ -22,3 +22,10 @@ Vector2 NormalizeVectorInIso(Vector2 &v)
 
     return v;
 }
+
+Vector2 GetCenter(Rectangle referenceRectangle, Vector2 toCenter)
+{
+    return Vector2{
+        referenceRectangle.x + referenceRectangle.width / 2 - (toCenter.x / 2),
+        referenceRectangle.y + referenceRectangle.height / 2 - (toCenter.y / 2)};
+}

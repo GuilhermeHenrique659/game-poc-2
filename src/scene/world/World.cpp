@@ -42,7 +42,7 @@ public:
 
         PlayerDto clientDto = {
             .id = clientId,
-            .position = clientPlayer->position,
+            .position = clientPlayer->GetPosition(),
             .direction = clientPlayer->GetPlayerDirection(),
             .isIdle = clientPlayer->isIdle,
             .angle = clientPlayer->angle};
@@ -81,24 +81,39 @@ public:
 
 void World::Setup()
 {
-    Vector2 startPos = IsoWorldToScreen(GetScreenWidth() / 2.0f / 256.0f, GetScreenHeight() / 2.0f / 128.0f);
+    Vector2 startPos = IsoWorldToScreen(GetScreenWidth() / 2.0f / 256.0f, GetScreenHeight() / 2.0f / 256.0f);
 
     auto playerId = entityManager->createPlayer(startPos, 0);
     entityManager->currentPlayerId = playerId;
+    auto player = entityManager->getPlayer(playerId);
+
+    entityManager->addListner("player_moved", std::make_unique<PlayerMovedObserver>(entityManager));
 
     camera.zoom = 1.0f;
     camera.rotation = 0.0f;
-    camera.offset = {(float)GetScreenWidth() / 2.0f, (float)GetScreenHeight() / 2.0f - 128.0f};
-    camera.target = entityManager->getPlayer(playerId)->position;
-
-    entityManager->addListner("player_moved", std::make_unique<PlayerMovedObserver>(entityManager));
+    camera.offset = {(float)GetScreenWidth() / 2.0f, (float)GetScreenHeight() / 2.0f};
+    camera.target = Vector2{player->GetPosition().x + 256.0f / 2, player->GetPosition().y - 512.0f / 2};
 }
 
 void World::Update(float delta)
 {
+
     std::shared_ptr<Player> player = entityManager->getPlayer(entityManager->currentPlayerId);
-    player->move(camera);
-    camera.target = Vector2Lerp(camera.target, player->position, 5.0f * delta);
+
+    std::vector<Rectangle> collisionRectangles;
+    for (const auto &pair : entityManager->getPlayers())
+    {
+        if (pair.first == entityManager->currentPlayerId)
+            continue;
+        collisionRectangles.push_back(pair.second->GetCollisionRectangle());
+    }
+
+    player->move(camera, collisionRectangles);
+
+    Vector2 cameraTarget = Vector2{
+        player->GetPosition().x + player->GetDestReactangle().width / 2,
+        player->GetPosition().y + player->GetDestReactangle().height - 128.0f};
+    camera.target = Vector2Lerp(camera.target, cameraTarget, 5.0f * delta);
 
     camera.zoom = expf(logf(camera.zoom) + ((float)GetMouseWheelMove() * 0.1f));
 
@@ -113,7 +128,7 @@ void World::Update(float delta)
     if (sendTimer > 1.0f / 40.0f)
     {
         entityManager->broadcastPlayer(EventName::PLAYER_MOVED, {.id = entityManager->currentPlayerId,
-                                                                 .position = player->position,
+                                                                 .position = player->GetPosition(),
                                                                  .direction = player->GetPlayerDirection(),
                                                                  .isIdle = player->isIdle,
                                                                  .angle = player->angle});
@@ -183,7 +198,7 @@ void World::Presenter(float delta)
     DrawTexturePro(
         sprite.GetCurrentTexture(),
         sprite.GetSourceRectangle(),
-        player->destRec,
+        player->GetDestReactangle(),
         {0, 0},
         0.0f,
         WHITE);
@@ -192,6 +207,8 @@ void World::Presenter(float delta)
     {
         for (auto &[id, rp] : entityManager->getPlayers())
         {
+            DrawRectangleRec(rp->GetCollisionRectangle(), Fade(RED, 0.5f));
+
             if (!network->isServer && id == entityManager->currentPlayerId)
                 continue;
 
@@ -204,10 +221,10 @@ void World::Presenter(float delta)
             DrawTexturePro(
                 remoteSprite.GetCurrentTexture(),
                 remoteSprite.GetSourceRectangle(),
-                rp->destRec,
-                {128, 128},
+                rp->GetDestReactangle(),
+                {0, 0},
                 0,
-                Fade(RED, 0.8f));
+                Fade(WHITE, 0.8f));
         }
     }
 
