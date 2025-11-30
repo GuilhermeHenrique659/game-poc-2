@@ -5,6 +5,8 @@
 #include "../../network/Events.h"
 #include "../../network/Package.h"
 
+// TODO not working with more than 2 player
+
 class PlayerMovedObserver : public Observer
 {
 private:
@@ -66,17 +68,16 @@ public:
         PlayerDto pm{};
         memcpy(&pm, pkg.data, sizeof(PlayerDto));
 
-        entityManager->getPlayers().erase(entityManager->currentPlayerId);
-        entityManager->getPlayers().erase(pm.id);
+        if (entityManager->remoteIdSettled)
+            return;
 
+        entityManager->getPlayers().erase(entityManager->currentPlayerId);
         entityManager->currentPlayerId = pm.id;
 
-        TraceLog(LOG_INFO, "Client: Id assigneed to %d", pm.id);
+        entityManager->createPlayer(pm.position, entityManager->currentPlayerId);
 
-        auto createId = entityManager->createPlayer(pm.position, entityManager->currentPlayerId);
-
-        TraceLog(LOG_INFO, "Create: %d", createId);
-        TraceLog(LOG_INFO, "Client: myPlayerId changed to %d", pm.id);
+        entityManager->remoteIdSettled = true;
+        TraceLog(LOG_INFO, "Client: Remove id settled changed currentId to %d", pm.id);
     }
 };
 

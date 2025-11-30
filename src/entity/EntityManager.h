@@ -13,6 +13,7 @@ private:
 
 public:
     uint32_t currentPlayerId = 0;
+    bool remoteIdSettled = false;
 
     EntityManager(Network *network) : network(network) {}
     ~EntityManager() = default;
