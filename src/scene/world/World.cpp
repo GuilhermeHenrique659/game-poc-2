@@ -5,8 +5,6 @@
 #include "../../network/Events.h"
 #include "../../network/Package.h"
 
-// TODO not working with more than 2 player
-
 class PlayerMovedObserver : public Observer
 {
 private:
