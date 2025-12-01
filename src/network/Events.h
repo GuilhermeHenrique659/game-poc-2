@@ -8,6 +8,7 @@ enum EventName
     CONNECTION,
     PLAYER_MOVED,
     ID_ASSIGNEED,
+    HITTED,
 };
 
 struct EventDefinition
@@ -20,4 +21,5 @@ static const EventDefinition EVENT_DEFINITIONS[] = {
     {0, "connection"},
     {1, "player_moved"},
     {2, "id_assign"},
+    {3, "hitted"},
 };

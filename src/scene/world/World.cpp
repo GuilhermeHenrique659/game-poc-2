@@ -27,6 +27,27 @@ public:
     }
 };
 
+class PlayerHittedObserver : public Observer
+{
+private:
+    EntityManager *entityManager;
+
+public:
+    PlayerHittedObserver(EntityManager *entityManager) : entityManager(entityManager) {}
+
+    void notify(const std::any &data)
+    {
+        RemotePacket pkg = std::any_cast<RemotePacket>(data);
+        PlayerDto pm{};
+        memcpy(&pm, pkg.data, sizeof(PlayerDto));
+
+        if (pm.id == entityManager->currentPlayerId)
+        {
+            TraceLog(LOG_INFO, "hitted");
+        }
+    }
+};
+
 class OnConnected : public Observer
 {
 private:
@@ -98,18 +119,28 @@ void World::Setup()
 
 void World::Update(float delta)
 {
-
     std::shared_ptr<Player> player = entityManager->getPlayer(entityManager->currentPlayerId);
 
     std::vector<Rectangle> collisionRectangles;
     for (const auto &pair : entityManager->getPlayers())
     {
+
+        if (player->IsHitted(pair.second->GetCollisionRectangle()))
+            entityManager->broadcastPlayer(EventName::HITTED, {.id = entityManager->currentPlayerId,
+                                                               .position = player->GetPosition(),
+                                                               .direction = player->GetPlayerDirection(),
+                                                               .state = player->GetPlayerState(),
+                                                               .angle = player->angle});
+
         if (pair.first == entityManager->currentPlayerId)
             continue;
         collisionRectangles.push_back(pair.second->GetCollisionRectangle());
     }
 
-    player->move(camera, collisionRectangles);
+    player->Attack();
+
+    if (player->GetPlayerState() != ATTACK)
+        player->move(camera, collisionRectangles);
 
     Vector2 cameraTarget = Vector2{
         player->GetPosition().x + player->GetDestReactangle().width / 2,
@@ -208,6 +239,11 @@ void World::Presenter(float delta)
     {
         for (auto &[id, rp] : entityManager->getPlayers())
         {
+            if (rp->GetAttackHitbox().has_value())
+            {
+                DrawRectangleRec(rp->GetAttackHitbox().value(), Fade(YELLOW, 0.5f));
+            }
+
             DrawRectangleRec(rp->GetCollisionRectangle(), Fade(RED, 0.5f));
 
             if (!network->isServer && id == entityManager->currentPlayerId)

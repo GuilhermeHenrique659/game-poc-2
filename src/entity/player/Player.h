@@ -4,6 +4,7 @@
 #include "PlayerSpriteAnimation.h"
 #include "PlayerState.h"
 #include <vector>
+#include <optional>
 
 class Player : public Subject
 {
@@ -15,6 +16,11 @@ private:
     Vector2 position;
     Rectangle destRec;
     Rectangle collisionRectangle;
+    std::optional<Rectangle> attackHitbox;
+
+    float attackTimer = 0.0f;
+    float attackDuration = 1.2f;
+    float attackCooldown = 0.8f;
 
     Vector2 NormalizeMove(Vector2 &moveDir);
 
@@ -42,6 +48,12 @@ public:
     int CalculateDirection();
 
     void Animate();
+    void Attack();
+
+    bool IsHitted(Rectangle rect);
+
+    void CreateAttackHitbox();
+    std::optional<Rectangle> GetAttackHitbox();
 
     void UpdateCollisionRectangle();
 

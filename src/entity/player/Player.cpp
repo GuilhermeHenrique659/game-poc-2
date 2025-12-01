@@ -20,6 +20,9 @@ PlayerState Player::GetPlayerState()
 
 void Player::SetPlayerState(PlayerState state)
 {
+    if (state == ATTACK)
+        CreateAttackHitbox();
+
     playerState = state;
 }
 
@@ -47,12 +50,50 @@ void Player::UpdatePosition(Vector2 newPosition)
     UpdateCollisionRectangle();
 }
 
+bool Player::IsHitted(Rectangle rect)
+{
+    if (!attackHitbox.has_value())
+        return false;
+
+    return CheckCollisionRecs(attackHitbox.value(), rect);
+}
+
 void Player::UpdateCollisionRectangle()
 {
     collisionRectangle.x = position.x + (destRec.width * COLLISION_OFFSET_X);
     collisionRectangle.y = position.y + (destRec.height * COLLISION_OFFSET_Y);
     collisionRectangle.width = destRec.width * COLLISION_WIDTH;
     collisionRectangle.height = destRec.height * COLLISION_HEIGHT;
+}
+
+void Player::CreateAttackHitbox()
+{
+    switch (playerDirection)
+    {
+    case PlayerDirection::RIGHT:
+        attackHitbox = {position.x + destRec.width * 0.64f, position.y + (destRec.height * COLLISION_OFFSET_Y), 60.0f, destRec.height * COLLISION_HEIGHT};
+        break;
+    case PlayerDirection::LEFT:
+        attackHitbox = {position.x + 72.0f, position.y + (destRec.height * COLLISION_OFFSET_Y), 60.0f, destRec.height * COLLISION_HEIGHT};
+        break;
+    case PlayerDirection::UP:
+        attackHitbox = {position.x + (destRec.width * COLLISION_OFFSET_X), position.y + 40.0f, destRec.width * COLLISION_WIDTH, 60.0f};
+        break;
+    case PlayerDirection::DOWN:
+        attackHitbox = {position.x + (destRec.width * COLLISION_OFFSET_X), position.y + destRec.height * 0.64f, destRec.width * COLLISION_WIDTH, 60.0f};
+        break;
+    default:
+        attackHitbox = {position.x + destRec.width * 0.64f,
+                        position.y + (destRec.height * COLLISION_OFFSET_Y),
+                        60.0f,
+                        destRec.height * COLLISION_HEIGHT};
+        break;
+    }
+}
+
+std::optional<Rectangle> Player::GetAttackHitbox()
+{
+    return attackHitbox;
 }
 
 Rectangle Player::GetFutureCollisionRectangle(Vector2 futurePosition) const
@@ -63,6 +104,29 @@ Rectangle Player::GetFutureCollisionRectangle(Vector2 futurePosition) const
     futureRect.width = destRec.width * COLLISION_WIDTH;
     futureRect.height = destRec.height * COLLISION_HEIGHT;
     return futureRect;
+}
+
+void Player::Attack()
+{
+    if (IsKeyDown(KEY_SPACE) && playerState != ATTACK)
+    {
+        playerState = ATTACK;
+        CreateAttackHitbox();
+    }
+
+    if (playerState == ATTACK)
+    {
+        attackTimer += GetFrameTime();
+
+        if (attackTimer >= attackDuration)
+        {
+            playerState = PlayerState::IDLE;
+            attackTimer = 0.0f;
+            attackHitbox.reset();
+
+            return;
+        }
+    }
 }
 
 void Player::move(Camera2D camera, std::vector<Rectangle> collisionRectangles)
