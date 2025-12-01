@@ -110,6 +110,7 @@ void World::Setup()
     auto player = entityManager->getPlayer(playerId);
 
     entityManager->addListner("player_moved", std::make_unique<PlayerMovedObserver>(entityManager));
+    entityManager->addListner("hitted", std::make_unique<PlayerHittedObserver>(entityManager));
 
     camera.zoom = 1.0f;
     camera.rotation = 0.0f;
@@ -126,11 +127,11 @@ void World::Update(float delta)
     {
 
         if (player->IsHitted(pair.second->GetCollisionRectangle()))
-            entityManager->broadcastPlayer(EventName::HITTED, {.id = entityManager->currentPlayerId,
-                                                               .position = player->GetPosition(),
-                                                               .direction = player->GetPlayerDirection(),
-                                                               .state = player->GetPlayerState(),
-                                                               .angle = player->angle});
+            entityManager->broadcastPlayer(EventName::HITTED, {.id = pair.first,
+                                                               .position = pair.second->GetPosition(),
+                                                               .direction = pair.second->GetPlayerDirection(),
+                                                               .state = pair.second->GetPlayerState(),
+                                                               .angle = pair.second->angle});
 
         if (pair.first == entityManager->currentPlayerId)
             continue;

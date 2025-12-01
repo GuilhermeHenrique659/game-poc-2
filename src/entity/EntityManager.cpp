@@ -66,7 +66,6 @@ void EntityManager::broadcastPlayer(EventName event, PlayerDto player)
     RemotePacket packet{};
 
     packet.eventId = EVENT_DEFINITIONS[event].id;
-
     memcpy(packet.data, &player, dataSize);
 
     network->Send(&packet, dataSize);
