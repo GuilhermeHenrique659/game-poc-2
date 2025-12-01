@@ -16,9 +16,8 @@ SpriteSheetInfo CalculateSpriteSheet(Texture2D texture, int totalFrames)
     SpriteSheetInfo info;
     info.totalFrames = totalFrames;
 
-    // CALCULA COLUNAS E LINHAS AUTOMATICAMENTE
-    info.columns = (int)sqrtf(totalFrames); // √24 ≈ 6
-    info.rows = totalFrames / info.columns; // 24 ÷ 6 = 4
+    info.columns = (int)sqrtf(totalFrames);
+    info.rows = totalFrames / info.columns;
 
     info.frameWidth = (float)texture.width / info.columns;
     info.frameHeight = (float)texture.height / info.rows;
@@ -39,6 +38,12 @@ Rectangle PlayerSpriteAnimation::GetSourceRectangle()
 Texture2D PlayerSpriteAnimation::GetCurrentTexture()
 {
     return currentTexture;
+}
+
+void PlayerSpriteAnimation::Reset()
+{
+    currentFrame = 0;
+    runningTime = 0.0f;
 }
 
 void PlayerSpriteAnimation::Animate(PlayerDirection playerDirection, PlayerState state)

@@ -19,7 +19,6 @@ private:
     std::optional<Rectangle> attackHitbox;
 
     float attackTimer = 0.0f;
-    float attackDuration = 1.2f;
     float attackCooldown = 0.8f;
 
     Vector2 NormalizeMove(Vector2 &moveDir);

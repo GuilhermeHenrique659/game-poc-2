@@ -111,6 +111,8 @@ void Player::Attack()
     if (IsKeyDown(KEY_SPACE) && playerState != ATTACK)
     {
         playerState = ATTACK;
+        attackTimer = 0.0f;
+        playerSpriteAnimation.Reset();
         CreateAttackHitbox();
     }
 
@@ -118,11 +120,12 @@ void Player::Attack()
     {
         attackTimer += GetFrameTime();
 
-        if (attackTimer >= attackDuration)
+        if (attackTimer >= ATTACK_DURATION)
         {
             playerState = PlayerState::IDLE;
             attackTimer = 0.0f;
             attackHitbox.reset();
+            playerSpriteAnimation.Reset();
 
             return;
         }

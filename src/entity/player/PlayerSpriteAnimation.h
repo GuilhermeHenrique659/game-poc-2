@@ -20,4 +20,5 @@ public:
 
     Rectangle GetSourceRectangle();
     Texture2D GetCurrentTexture();
+    void Reset();
 };

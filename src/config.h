@@ -4,6 +4,8 @@
 #define SPRITE_FRAME_WIDHT 320.0f
 #define SPRITEH_FRAME_HEIGHT 320.0f
 
+#define ATTACK_DURATION 1.28f
+
 #define COLLISION_OFFSET_X 0.35f // 39% da largura (100/256)
 #define COLLISION_OFFSET_Y 0.31f // 64% da altura (307.2/512)
 #define COLLISION_WIDTH 0.31f    // 31% da largura (80/256)
