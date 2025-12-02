@@ -58,6 +58,22 @@ bool Player::IsHitted(Rectangle rect)
     return CheckCollisionRecs(attackHitbox.value(), rect);
 }
 
+void Player::OnHit(Rectangle rect)
+{
+
+    if (hitTimer > 0.0f)
+    {
+        hitTimer -= GetFrameTime();
+        return;
+    }
+
+    if (CheckCollisionRecs(collisionRectangle, rect))
+    {
+        health -= 1;
+        hitTimer = HIT_COOLDOWN; // inicia o cooldown
+    }
+}
+
 void Player::UpdateCollisionRectangle()
 {
     collisionRectangle.x = position.x + (destRec.width * COLLISION_OFFSET_X);

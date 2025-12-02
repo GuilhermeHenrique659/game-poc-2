@@ -105,6 +105,8 @@ void World::Setup()
 {
     Vector2 startPos = IsoWorldToScreen(GetScreenWidth() / 2.0f / SPRITE_FRAME_WIDHT, GetScreenHeight() / 2.0f / SPRITE_FRAME_WIDHT);
 
+    entityManager->createEnemy({900, 900}, 0);
+
     auto playerId = entityManager->createPlayer(startPos, 0);
     entityManager->currentPlayerId = playerId;
     auto player = entityManager->getPlayer(playerId);
@@ -121,20 +123,22 @@ void World::Setup()
 void World::Update(float delta)
 {
     std::shared_ptr<Player> player = entityManager->getPlayer(entityManager->currentPlayerId);
+    std::vector<std::shared_ptr<Player>> players;
 
     std::vector<Rectangle> collisionRectangles;
     for (const auto &pair : entityManager->getPlayers())
     {
-
         if (player->IsHitted(pair.second->GetCollisionRectangle()))
             entityManager->broadcastPlayer(EventName::HITTED, {.id = pair.first,
                                                                .position = pair.second->GetPosition(),
                                                                .direction = pair.second->GetPlayerDirection(),
                                                                .state = pair.second->GetPlayerState(),
                                                                .angle = pair.second->angle});
+        players.push_back(pair.second);
 
         if (pair.first == entityManager->currentPlayerId)
             continue;
+
         collisionRectangles.push_back(pair.second->GetCollisionRectangle());
     }
 
@@ -149,6 +153,11 @@ void World::Update(float delta)
     camera.target = Vector2Lerp(camera.target, cameraTarget, 5.0f * delta);
 
     camera.zoom = expf(logf(camera.zoom) + ((float)GetMouseWheelMove() * 0.1f));
+
+    for (const auto &pair : entityManager->getEnemies())
+    {
+        pair.second->move(collisionRectangles, players);
+    }
 
     if (camera.zoom > 3.0f)
         camera.zoom = 3.0f;
@@ -218,7 +227,7 @@ void World::Presenter(float delta)
             DrawTexturePro(
                 background,
                 {0.0f, 0.0f, (float)background.width, (float)background.height},
-                {(float)(gridPostion.x), (float)(gridPostion.y), SPRITE_FRAME_WIDHT, SPRITEH_FRAME_HEIGHT},
+                {(float)(gridPostion.x), (float)(gridPostion.y), (float)background.width, (float)background.height},
                 {0, 0},
                 0.0f,
                 WHITE);
@@ -266,5 +275,24 @@ void World::Presenter(float delta)
         }
     }
 
+    if (!entityManager->getEnemies().empty())
+    {
+        for (auto &[id, rp] : entityManager->getEnemies())
+        {
+            rp->Animate();
+            auto remoteSprite = rp->GetEnemySprite();
+
+            DrawTexturePro(
+                remoteSprite.GetCurrentTexture(),
+                remoteSprite.GetSourceRectangle(),
+                rp->GetDestReactangle(),
+                {0, 0},
+                0,
+                Fade(RED, 0.8f));
+        }
+    }
+
     EndMode2D();
+
+    DrawText(TextFormat("Vida %d/10", player->health), 10, 30, 12, GREEN);
 }

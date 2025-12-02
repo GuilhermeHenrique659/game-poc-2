@@ -3,7 +3,6 @@
 #include "network/Network.h"
 
 #include "common/Subject.h" // seu header com Entity e Observer
-#include "enemy/Enemy.h"
 #include "common/ui/Button.h"
 #include "common/Scene.h"
 #include "common/GameState.h"
