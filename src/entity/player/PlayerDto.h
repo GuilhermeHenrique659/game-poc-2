@@ -10,5 +10,4 @@ struct PlayerDto
     Vector2 position;
     PlayerDirection direction;
     PlayerState state;
-    float angle;
 };

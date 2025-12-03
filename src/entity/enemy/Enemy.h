@@ -6,31 +6,25 @@
 #include "../player/Player.h"
 #include <vector>
 #include <optional>
+#include "../common/EntityPosition.h"
 
 class Enemy : public Subject
 {
 private:
-    EnemyDirection enemyDirection = EnemyDirection::DOWN;
     EnemyState enemyState = EnemyState::IDLE;
+    EntityPosition *enemyPosition;
 
     EnemySpriteAnimation enemySpriteAnimation;
-    Vector2 position;
-    Rectangle destRec;
-    Rectangle collisionRectangle;
     std::optional<Rectangle> attackHitbox;
-
-    int health = 10;
 
     float attackTimer = 0.0f;
     float attackCooldown = 0.8f;
 
-    Vector2 NormalizeMove(Vector2 &moveDir);
-
 public:
-    float angle = 0;
+    int health = 5;
 
-    Enemy(Vector2 position, Rectangle destRec, EnemySpriteAnimation enemySpriteAnimation) : position(position), destRec(destRec), enemySpriteAnimation(enemySpriteAnimation),
-                                                                                            collisionRectangle{position.x, position.y, destRec.width / 4, destRec.height / 4} {};
+    Enemy(Vector2 position, Rectangle destRec, EnemySpriteAnimation enemySpriteAnimation) : enemySpriteAnimation(enemySpriteAnimation),
+                                                                                            enemyPosition(new EntityPosition(position, Direction::DOWN, destRec, {position.x, position.y, destRec.width / 4, destRec.height / 4}, 3.0f)) {};
     ~Enemy() = default;
 
     Rectangle GetDestReactangle();
@@ -45,9 +39,6 @@ public:
 
     void UpdatePosition(Vector2 position);
 
-    void CalculateAngle(const Camera2D &camera, Vector2 &moveDir);
-    int CalculateDirection();
-
     void Animate();
     void Attack();
 
@@ -59,9 +50,5 @@ public:
     void CreateAttackHitbox();
     std::optional<Rectangle> GetAttackHitbox();
 
-    void UpdateCollisionRectangle();
-
     Rectangle &GetCollisionRectangle();
-
-    Rectangle GetFutureCollisionRectangle(Vector2 futurePosition) const;
 };

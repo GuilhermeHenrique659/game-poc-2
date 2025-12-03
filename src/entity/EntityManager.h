@@ -31,6 +31,8 @@ public:
 
     void addListner(const std::string &event, std::unique_ptr<Observer> observer);
 
+    void killEnemy(uint32_t id);
+
     std::unordered_map<uint32_t, std::shared_ptr<Player>> getPlayers();
     std::unordered_map<uint32_t, std::shared_ptr<Enemy>> getEnemies();
 };

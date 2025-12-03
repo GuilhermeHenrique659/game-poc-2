@@ -11,7 +11,7 @@ EnemySpriteAnimation Enemy::GetEnemySprite()
 
 EnemyDirection Enemy::GetEnemyDirection()
 {
-    return enemyDirection;
+    return (EnemyDirection)enemyPosition->GetDirection();
 }
 
 EnemyState Enemy::GetEnemyState()
@@ -29,26 +29,17 @@ void Enemy::SetEnemyState(EnemyState state)
 
 Vector2 Enemy::GetPosition()
 {
-    return position;
+    return enemyPosition->GetPostion();
 }
 
 Rectangle &Enemy::GetCollisionRectangle()
 {
-    return collisionRectangle;
+    return enemyPosition->GetCollisionRectangle();
 }
 
 Rectangle Enemy::GetDestReactangle()
 {
-    return destRec;
-}
-
-void Enemy::UpdatePosition(Vector2 newPosition)
-{
-    position = newPosition;
-    destRec.x = position.x;
-    destRec.y = position.y;
-
-    UpdateCollisionRectangle();
+    return enemyPosition->GetPositionRectangle();
 }
 
 bool Enemy::IsHitted(Rectangle rect)
@@ -61,34 +52,30 @@ bool Enemy::IsHitted(Rectangle rect)
 
 void Enemy::OnHit(Rectangle rect)
 {
-    if (CheckCollisionRecs(collisionRectangle, rect))
+    if (CheckCollisionRecs(enemyPosition->GetCollisionRectangle(), rect))
     {
+        TraceLog(LOG_INFO, "Enemy hitted");
         health -= 1;
     }
 }
 
-void Enemy::UpdateCollisionRectangle()
-{
-    collisionRectangle.x = position.x + (destRec.width * COLLISION_OFFSET_X);
-    collisionRectangle.y = position.y + (destRec.height * COLLISION_OFFSET_Y);
-    collisionRectangle.width = destRec.width * COLLISION_WIDTH;
-    collisionRectangle.height = destRec.height * COLLISION_HEIGHT;
-}
-
 void Enemy::CreateAttackHitbox()
 {
-    switch (enemyDirection)
+    Vector2 position = enemyPosition->GetPostion();
+    Rectangle destRec = enemyPosition->GetPositionRectangle();
+
+    switch (enemyPosition->GetDirection())
     {
-    case EnemyDirection::RIGHT:
+    case Direction::RIGHT:
         attackHitbox = {position.x + destRec.width * 0.64f, position.y + (destRec.height * COLLISION_OFFSET_Y), 60.0f, destRec.height * COLLISION_HEIGHT};
         break;
-    case EnemyDirection::LEFT:
+    case Direction::LEFT:
         attackHitbox = {position.x + 72.0f, position.y + (destRec.height * COLLISION_OFFSET_Y), 60.0f, destRec.height * COLLISION_HEIGHT};
         break;
-    case EnemyDirection::UP:
+    case Direction::UP:
         attackHitbox = {position.x + (destRec.width * COLLISION_OFFSET_X), position.y + 40.0f, destRec.width * COLLISION_WIDTH, 60.0f};
         break;
-    case EnemyDirection::DOWN:
+    case Direction::DOWN:
         attackHitbox = {position.x + (destRec.width * COLLISION_OFFSET_X), position.y + destRec.height * 0.64f, destRec.width * COLLISION_WIDTH, 60.0f};
         break;
     default:
@@ -105,20 +92,11 @@ std::optional<Rectangle> Enemy::GetAttackHitbox()
     return attackHitbox;
 }
 
-Rectangle Enemy::GetFutureCollisionRectangle(Vector2 futurePosition) const
-{
-    Rectangle futureRect;
-    futureRect.x = futurePosition.x + (destRec.width * COLLISION_OFFSET_X);
-    futureRect.y = futurePosition.y + (destRec.height * COLLISION_OFFSET_Y);
-    futureRect.width = destRec.width * COLLISION_WIDTH;
-    futureRect.height = destRec.height * COLLISION_HEIGHT;
-    return futureRect;
-}
-
 void Enemy::Attack()
 {
-    if (IsKeyDown(KEY_SPACE) && enemyState != EnemyState::ATTACK)
+    if (enemyState != EnemyState::ATTACK)
     {
+        attackHitbox.reset();
         enemyState = EnemyState::ATTACK;
         attackTimer = 0.0f;
         enemySpriteAnimation.Reset();
@@ -141,6 +119,11 @@ void Enemy::Attack()
     }
 }
 
+void Enemy::UpdatePosition(Vector2 newPostion)
+{
+    enemyPosition->UpdatePosition(newPostion);
+}
+
 void Enemy::move(std::vector<Rectangle> &collisionRectangles, const std::vector<std::shared_ptr<Player>> players)
 {
     if (players.empty())
@@ -155,7 +138,7 @@ void Enemy::move(std::vector<Rectangle> &collisionRectangles, const std::vector<
 
     for (auto &p : players)
     {
-        float d = Vector2DistanceSqr(position, p->GetPosition());
+        float d = Vector2DistanceSqr(enemyPosition->GetPostion(), p->GetPosition());
         if (d < closestDistSqr)
         {
             closestDistSqr = d;
@@ -170,126 +153,45 @@ void Enemy::move(std::vector<Rectangle> &collisionRectangles, const std::vector<
     }
 
     Vector2 targetPos = target->GetPosition();
-    Vector2 toTarget = Vector2Subtract(targetPos, position);
+    Vector2 toTarget = Vector2Subtract(targetPos, enemyPosition->GetPostion());
     float distance = Vector2Length(toTarget);
 
-    const float STOP_DISTANCE = 40.0f; // para de tremer quando chega perto
-    const float ATTACK_RANGE = 40.0f;  // distância para começar ataque
-    const float ENEMY_SPEED = 3.9f;    // ajuste conforme seu jogo
+    const float STOP_DISTANCE = 50.0f; // para de tremer quando chega perto
+    const float ATTACK_RANGE = 60.0f;  // distância para começar ataque
 
-    Vector2 oldPosition = position;
-    Vector2 moveDir = {0, 0};
-
-    // -------------------------------
-    // PERSEGUIÇÃO
-    // -------------------------------
     if (distance > STOP_DISTANCE)
     {
-        // Direção normalizada no mundo cartesiano
-        Vector2 dirCart = Vector2Scale(toTarget, 1.0f / distance);
 
-        // Converte para isométrico (exatamente como você já fazia com as teclas)
-        moveDir = ToIso(dirCart);
-        NormalizeVectorInIso(moveDir);
-        moveDir = Vector2Scale(moveDir, ENEMY_SPEED);
-
-        // Posição futura para checar colisão
-        Vector2 futurePos = Vector2Add(position, moveDir);
-        Rectangle futureRect = GetFutureCollisionRectangle(futurePos);
-
-        bool canMove = true;
-        for (const auto &rect : collisionRectangles)
+        Vector2 moveDir = Vector2Scale(toTarget, 1.0f / distance);
+        // -------------------------------
+        // PERSEGUIÇÃO
+        // -------------------------------
+        if (enemyPosition->MoveAndCollision(moveDir, collisionRectangles))
         {
-            if (CheckCollisionRecs(futureRect, rect))
-            {
-                canMove = false;
-                break;
-            }
+            enemyState = EnemyState::RUN;
+
+            _publish("moved", std::any(enemyPosition->GetPostion()));
         }
-
-        if (canMove)
-            UpdatePosition(futurePos);
+        else
+        {
+            enemyState = EnemyState::IDLE;
+        }
     }
 
-    // -------------------------------
-    // ATUALIZA ESTADO E DIREÇÃO (8 direções)
-    // -------------------------------
-    if (!Vector2Equals(oldPosition, position))
+    if (distance <= ATTACK_RANGE)
     {
-        enemyState = EnemyState::RUN;
-
-        // Calcula ângulo correto para animação (usa direção cartesiana do alvo)
-        angle = RAD2DEG * atan2f(toTarget.y, toTarget.x);
-        angle = fmodf(angle + 360.0f, 360.0f);
-        enemyDirection = static_cast<EnemyDirection>(CalculateDirection());
-
-        _publish("moved", std::any(position));
+        Attack();
+        if (attackHitbox.has_value())
+            target->OnHit(attackHitbox.value());
     }
-    else
-    {
-        enemyState = EnemyState::IDLE;
-    }
-
-    // -------------------------------
-    // ATAQUE AUTOMÁTICO QUANDO ESTIVER PERTO
-    // -------------------------------
-    if (distance <= ATTACK_RANGE && enemyState != EnemyState::ATTACK)
-    {
-        SetEnemyState(EnemyState::ATTACK); // já cria hitbox e reseta timer
-        target->OnHit(attackHitbox.value());
-        attackTimer = 0.0f;
-    }
-}
-
-void Enemy::CalculateAngle(const Camera2D &camera, Vector2 &moveDir)
-{
-    if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT))
-    {
-        Vector2 mouseWorld = GetScreenToWorld2D(GetMousePosition(), camera);
-        Vector2 toMouse = Vector2Subtract(mouseWorld, position);
-        angle = RAD2DEG * atan2f(toMouse.y, toMouse.x);
-    }
-    else if (moveDir.x != 0.0f || moveDir.y != 0.0f)
-    {
-        angle = RAD2DEG * atan2f(moveDir.y, moveDir.x);
-    }
-
-    angle = fmodf(angle, 360.0f);
-    if (angle < 0.0f)
-        angle += 360.0f;
-}
-
-int Enemy::CalculateDirection()
-{
-    const float FORTY_FIVE_DEGREES = 45.0f;
-    const float HALF_FORTY_FIVE_DEGREES = 22.5f;
-    const int DIRECTIONS = 8;
-    return (int)((angle + HALF_FORTY_FIVE_DEGREES) / FORTY_FIVE_DEGREES) % DIRECTIONS;
 }
 
 void Enemy::SetEnemyDirection(EnemyDirection newEnemyDirection)
 {
-    enemyDirection = newEnemyDirection;
+    enemyPosition->SetPlayerDirection((Direction)newEnemyDirection);
 }
 
 void Enemy::Animate()
 {
-    enemySpriteAnimation.Animate(enemyDirection, enemyState);
-}
-
-Vector2 Enemy::NormalizeMove(Vector2 &moveDir)
-{
-    const float speed = 5.0f;
-    moveDir = ToIso(moveDir);
-
-    if (moveDir.x == 0 && moveDir.y == 0)
-        return Vector2{
-            position.x,
-            position.y};
-
-    NormalizeVectorInIso(moveDir);
-
-    return Vector2{
-        position.x + moveDir.x * speed,
-        position.y + moveDir.y * speed};
+    enemySpriteAnimation.Animate((EnemyDirection)enemyPosition->GetDirection(), enemyState);
 }

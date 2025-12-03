@@ -6,6 +6,27 @@
 #include "../../network/Package.h"
 #include "../../config.h"
 
+class PlayerAttacks : public Observer
+{
+private:
+    EntityManager *entityManager;
+
+public:
+    PlayerAttacks(EntityManager *entityManager) : entityManager(entityManager) {}
+
+    void notify(const std::any &data)
+    {
+        TraceLog(LOG_INFO, "player attacks");
+        auto attackBox = std::any_cast<std::optional<Rectangle>>(data);
+
+        for (auto &[id, e] : entityManager->getEnemies())
+        {
+            if (attackBox.has_value())
+                e->OnHit(attackBox.value());
+        }
+    }
+};
+
 class PlayerMovedObserver : public Observer
 {
 private:
@@ -67,7 +88,7 @@ public:
             .position = clientPlayer->GetPosition(),
             .direction = clientPlayer->GetPlayerDirection(),
             .state = clientPlayer->GetPlayerState(),
-            .angle = clientPlayer->angle};
+        };
 
         TraceLog(LOG_INFO, "Host assigned ID %d to new client", clientId);
         entityManager->broadcastPlayer(EventName::ID_ASSIGNEED, clientDto);
@@ -113,6 +134,7 @@ void World::Setup()
 
     entityManager->addListner("player_moved", std::make_unique<PlayerMovedObserver>(entityManager));
     entityManager->addListner("hitted", std::make_unique<PlayerHittedObserver>(entityManager));
+    player->subscribe("player_attacked", std::make_unique<PlayerAttacks>(entityManager));
 
     camera.zoom = 1.0f;
     camera.rotation = 0.0f;
@@ -129,11 +151,12 @@ void World::Update(float delta)
     for (const auto &pair : entityManager->getPlayers())
     {
         if (player->IsHitted(pair.second->GetCollisionRectangle()))
-            entityManager->broadcastPlayer(EventName::HITTED, {.id = pair.first,
-                                                               .position = pair.second->GetPosition(),
-                                                               .direction = pair.second->GetPlayerDirection(),
-                                                               .state = pair.second->GetPlayerState(),
-                                                               .angle = pair.second->angle});
+            entityManager->broadcastPlayer(EventName::HITTED, {
+                                                                  .id = pair.first,
+                                                                  .position = pair.second->GetPosition(),
+                                                                  .direction = pair.second->GetPlayerDirection(),
+                                                                  .state = pair.second->GetPlayerState(),
+                                                              });
         players.push_back(pair.second);
 
         if (pair.first == entityManager->currentPlayerId)
@@ -154,9 +177,13 @@ void World::Update(float delta)
 
     camera.zoom = expf(logf(camera.zoom) + ((float)GetMouseWheelMove() * 0.1f));
 
-    for (const auto &pair : entityManager->getEnemies())
+    for (const auto &[id, e] : entityManager->getEnemies())
     {
-        pair.second->move(collisionRectangles, players);
+        if (e->health == 0)
+        {
+            entityManager->killEnemy(id);
+        }
+        e->move(collisionRectangles, players);
     }
 
     if (camera.zoom > 3.0f)
@@ -169,11 +196,12 @@ void World::Update(float delta)
 
     if (sendTimer > 1.0f / 40.0f)
     {
-        entityManager->broadcastPlayer(EventName::PLAYER_MOVED, {.id = entityManager->currentPlayerId,
-                                                                 .position = player->GetPosition(),
-                                                                 .direction = player->GetPlayerDirection(),
-                                                                 .state = player->GetPlayerState(),
-                                                                 .angle = player->angle});
+        entityManager->broadcastPlayer(EventName::PLAYER_MOVED, {
+                                                                    .id = entityManager->currentPlayerId,
+                                                                    .position = player->GetPosition(),
+                                                                    .direction = player->GetPlayerDirection(),
+                                                                    .state = player->GetPlayerState(),
+                                                                });
         sendTimer = 0;
     }
 
@@ -249,13 +277,12 @@ void World::Presenter(float delta)
     {
         for (auto &[id, rp] : entityManager->getPlayers())
         {
-            /*             if (rp->GetAttackHitbox().has_value())
-                        {
-                            DrawRectangleRec(rp->GetAttackHitbox().value(), Fade(YELLOW, 0.5f));
-                        }
+            if (rp->GetAttackHitbox().has_value())
+            {
+                DrawRectangleRec(rp->GetAttackHitbox().value(), Fade(YELLOW, 0.5f));
+            }
 
-                        DrawRectangleRec(rp->GetCollisionRectangle(), Fade(RED, 0.5f)); */
-
+            // DrawRectangleRec(rp->GetCollisionRectangle(), Fade(RED, 0.5f));
             if (!network->isServer && id == entityManager->currentPlayerId)
                 continue;
 
@@ -279,6 +306,11 @@ void World::Presenter(float delta)
     {
         for (auto &[id, rp] : entityManager->getEnemies())
         {
+            /*             if (rp->GetAttackHitbox().has_value())
+                        {
+                            DrawRectangleRec(rp->GetAttackHitbox().value(), Fade(YELLOW, 0.5f));
+                        }
+             */
             rp->Animate();
             auto remoteSprite = rp->GetEnemySprite();
 

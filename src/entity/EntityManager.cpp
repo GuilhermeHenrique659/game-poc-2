@@ -8,7 +8,15 @@ std::shared_ptr<Player> EntityManager::getPlayer(uint32_t id)
 
 std::unordered_map<uint32_t, std::shared_ptr<Enemy>> EntityManager::getEnemies()
 {
+    if (enemies.empty())
+        createEnemy({0, 0}, 0);
+
     return enemies;
+}
+
+void EntityManager::killEnemy(uint32_t id)
+{
+    enemies.erase(id);
 }
 
 std::unordered_map<uint32_t, std::shared_ptr<Player>> EntityManager::getPlayers()
@@ -27,7 +35,6 @@ void EntityManager::updatePlayer(PlayerDto data)
 
     player->UpdatePosition(data.position);
     player->SetPlayerDirection(static_cast<PlayerDirection>(data.direction));
-    player->angle = data.angle;
     player->SetPlayerState(data.state);
 }
 

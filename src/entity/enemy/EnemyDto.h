@@ -10,5 +10,4 @@ struct EnemyDto
     Vector2 position;
     EnemyDirection direction;
     EnemyState state;
-    float angle;
 };
