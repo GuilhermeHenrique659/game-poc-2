@@ -7,24 +7,23 @@
 #include <vector>
 #include <optional>
 #include "../common/EntityPosition.h"
+#include "../common/EntityAttack.h"
 
 class Enemy : public Subject
 {
 private:
     EnemyState enemyState = EnemyState::IDLE;
     EntityPosition *enemyPosition;
+    EntityAttack *basicAttack;
 
     EnemySpriteAnimation enemySpriteAnimation;
-    std::optional<Rectangle> attackHitbox;
-
-    float attackTimer = 0.0f;
-    float attackCooldown = 0.8f;
 
 public:
     int health = 5;
 
     Enemy(Vector2 position, Rectangle destRec, EnemySpriteAnimation enemySpriteAnimation) : enemySpriteAnimation(enemySpriteAnimation),
-                                                                                            enemyPosition(new EntityPosition(position, Direction::DOWN, destRec, {position.x, position.y, destRec.width / 4, destRec.height / 4}, 3.0f)) {};
+                                                                                            enemyPosition(new EntityPosition(position, Direction::DOWN, destRec, {position.x, position.y, destRec.width / 4, destRec.height / 4}, 3.0f)),
+                                                                                            basicAttack(new EntityAttack(destRec.width * 0.5f, destRec.height * 0.5f, 60.0f, 0.8f, 1.28f)) {};
     ~Enemy() = default;
 
     Rectangle GetDestReactangle();
@@ -47,7 +46,6 @@ public:
     bool IsHitted(Rectangle rect);
     void OnHit(Rectangle rect);
 
-    void CreateAttackHitbox();
     std::optional<Rectangle> GetAttackHitbox();
 
     Rectangle &GetCollisionRectangle();

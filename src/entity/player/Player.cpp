@@ -8,9 +8,9 @@ PlayerSpriteAnimation Player::GetPlayerSprite()
     return playerSpriteAnimation;
 }
 
-PlayerDirection Player::GetPlayerDirection()
+Direction Player::GetPlayerDirection()
 {
-    return (PlayerDirection)playerPosition->GetDirection();
+    return playerPosition->GetDirection();
 }
 
 PlayerState Player::GetPlayerState()
@@ -21,7 +21,7 @@ PlayerState Player::GetPlayerState()
 void Player::SetPlayerState(PlayerState state)
 {
     if (state == ATTACK)
-        CreateAttackHitbox();
+        basicAttack->attack(playerPosition);
 
     playerState = state;
 }
@@ -48,10 +48,10 @@ void Player::UpdatePosition(Vector2 newPosition)
 
 bool Player::IsHitted(Rectangle rect)
 {
-    if (!attackHitbox.has_value())
+    if (!basicAttack->getAttackbox().has_value())
         return false;
 
-    return CheckCollisionRecs(attackHitbox.value(), rect);
+    return CheckCollisionRecs(basicAttack->getAttackbox().value(), rect);
 }
 
 void Player::OnHit(Rectangle rect)
@@ -71,37 +71,9 @@ void Player::OnHit(Rectangle rect)
     }
 }
 
-void Player::CreateAttackHitbox()
-{
-    Vector2 position = playerPosition->GetPostion();
-    Rectangle destRec = playerPosition->GetPositionRectangle();
-
-    switch (playerPosition->GetDirection())
-    {
-    case Direction::RIGHT:
-        attackHitbox = {position.x + destRec.width * 0.64f, position.y + (destRec.height * COLLISION_OFFSET_Y), 60.0f, destRec.height * COLLISION_HEIGHT};
-        break;
-    case Direction::LEFT:
-        attackHitbox = {position.x + 72.0f, position.y + (destRec.height * COLLISION_OFFSET_Y), 60.0f, destRec.height * COLLISION_HEIGHT};
-        break;
-    case Direction::UP:
-        attackHitbox = {position.x + (destRec.width * COLLISION_OFFSET_X), position.y + 40.0f, destRec.width * COLLISION_WIDTH, 60.0f};
-        break;
-    case Direction::DOWN:
-        attackHitbox = {position.x + (destRec.width * COLLISION_OFFSET_X), position.y + destRec.height * 0.64f, destRec.width * COLLISION_WIDTH, 60.0f};
-        break;
-    default:
-        attackHitbox = {position.x + destRec.width * 0.64f,
-                        position.y + (destRec.height * COLLISION_OFFSET_Y),
-                        60.0f,
-                        destRec.height * COLLISION_HEIGHT};
-        break;
-    }
-}
-
 std::optional<Rectangle> Player::GetAttackHitbox()
 {
-    return attackHitbox;
+    return basicAttack->getAttackbox();
 }
 
 void Player::Attack()
@@ -109,26 +81,16 @@ void Player::Attack()
     if (IsKeyDown(KEY_SPACE) && playerState != ATTACK)
     {
         playerState = ATTACK;
-        attackTimer = 0.0f;
         playerSpriteAnimation.Reset();
-        CreateAttackHitbox();
+        basicAttack->attack(playerPosition);
 
-        _publish("player_attacked", std::any(attackHitbox));
+        _publish("player_attacked", std::any(basicAttack->getAttackbox()));
     }
 
-    if (playerState == ATTACK)
+    if (playerState == ATTACK && basicAttack->attack(playerPosition))
     {
-        attackTimer += GetFrameTime();
-
-        if (attackTimer >= ATTACK_DURATION)
-        {
-            playerState = PlayerState::IDLE;
-            attackTimer = 0.0f;
-            attackHitbox.reset();
-            playerSpriteAnimation.Reset();
-
-            return;
-        }
+        playerState = IDLE;
+        playerSpriteAnimation.Reset();
     }
 }
 
@@ -169,9 +131,9 @@ void Player::move(Camera2D camera, std::vector<Rectangle> collisionRectangles)
     }
 }
 
-void Player::SetPlayerDirection(PlayerDirection newPlayerDirection)
+void Player::SetPlayerDirection(Direction newPlayerDirection)
 {
-    playerPosition->SetPlayerDirection((Direction)newPlayerDirection);
+    playerPosition->SetPlayerDirection(newPlayerDirection);
 }
 
 void Player::Animate()

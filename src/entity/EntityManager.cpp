@@ -34,7 +34,7 @@ void EntityManager::updatePlayer(PlayerDto data)
     auto player = players[data.id];
 
     player->UpdatePosition(data.position);
-    player->SetPlayerDirection(static_cast<PlayerDirection>(data.direction));
+    player->SetPlayerDirection(static_cast<Direction>(data.direction));
     player->SetPlayerState(data.state);
 }
 

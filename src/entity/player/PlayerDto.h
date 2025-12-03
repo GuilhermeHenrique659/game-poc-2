@@ -2,12 +2,13 @@
 #include "raylib.h"
 #include "PlayerDirection.h"
 #include "PlayerState.h"
+#include "../common/Direction.h"
 #include <cstdint>
 
 struct PlayerDto
 {
     uint32_t id;
     Vector2 position;
-    PlayerDirection direction;
+    Direction direction;
     PlayerState state;
 };

@@ -22,7 +22,7 @@ EnemyState Enemy::GetEnemyState()
 void Enemy::SetEnemyState(EnemyState state)
 {
     if (state == EnemyState::ATTACK)
-        CreateAttackHitbox();
+        basicAttack->attack(enemyPosition);
 
     enemyState = state;
 }
@@ -44,10 +44,10 @@ Rectangle Enemy::GetDestReactangle()
 
 bool Enemy::IsHitted(Rectangle rect)
 {
-    if (!attackHitbox.has_value())
+    if (!basicAttack->getAttackbox().has_value())
         return false;
 
-    return CheckCollisionRecs(attackHitbox.value(), rect);
+    return CheckCollisionRecs(basicAttack->getAttackbox().value(), rect);
 }
 
 void Enemy::OnHit(Rectangle rect)
@@ -59,63 +59,26 @@ void Enemy::OnHit(Rectangle rect)
     }
 }
 
-void Enemy::CreateAttackHitbox()
-{
-    Vector2 position = enemyPosition->GetPostion();
-    Rectangle destRec = enemyPosition->GetPositionRectangle();
-
-    switch (enemyPosition->GetDirection())
-    {
-    case Direction::RIGHT:
-        attackHitbox = {position.x + destRec.width * 0.64f, position.y + (destRec.height * COLLISION_OFFSET_Y), 60.0f, destRec.height * COLLISION_HEIGHT};
-        break;
-    case Direction::LEFT:
-        attackHitbox = {position.x + 72.0f, position.y + (destRec.height * COLLISION_OFFSET_Y), 60.0f, destRec.height * COLLISION_HEIGHT};
-        break;
-    case Direction::UP:
-        attackHitbox = {position.x + (destRec.width * COLLISION_OFFSET_X), position.y + 40.0f, destRec.width * COLLISION_WIDTH, 60.0f};
-        break;
-    case Direction::DOWN:
-        attackHitbox = {position.x + (destRec.width * COLLISION_OFFSET_X), position.y + destRec.height * 0.64f, destRec.width * COLLISION_WIDTH, 60.0f};
-        break;
-    default:
-        attackHitbox = {position.x + destRec.width * 0.64f,
-                        position.y + (destRec.height * COLLISION_OFFSET_Y),
-                        60.0f,
-                        destRec.height * COLLISION_HEIGHT};
-        break;
-    }
-}
-
 std::optional<Rectangle> Enemy::GetAttackHitbox()
 {
-    return attackHitbox;
+    return basicAttack->getAttackbox();
 }
 
 void Enemy::Attack()
 {
     if (enemyState != EnemyState::ATTACK)
     {
-        attackHitbox.reset();
         enemyState = EnemyState::ATTACK;
-        attackTimer = 0.0f;
         enemySpriteAnimation.Reset();
-        CreateAttackHitbox();
+        basicAttack->attack(enemyPosition);
+
+        _publish("player_attacked", std::any(basicAttack->getAttackbox()));
     }
 
-    if (enemyState == EnemyState::ATTACK)
+    if (enemyState == EnemyState::ATTACK && basicAttack->attack(enemyPosition))
     {
-        attackTimer += GetFrameTime();
-
-        if (attackTimer >= ATTACK_DURATION)
-        {
-            enemyState = EnemyState::IDLE;
-            attackTimer = 0.0f;
-            attackHitbox.reset();
-            enemySpriteAnimation.Reset();
-
-            return;
-        }
+        enemyState = EnemyState::IDLE;
+        enemySpriteAnimation.Reset();
     }
 }
 
@@ -181,8 +144,8 @@ void Enemy::move(std::vector<Rectangle> &collisionRectangles, const std::vector<
     if (distance <= ATTACK_RANGE)
     {
         Attack();
-        if (attackHitbox.has_value())
-            target->OnHit(attackHitbox.value());
+        if (basicAttack->getAttackbox().has_value())
+            target->OnHit(basicAttack->getAttackbox().value());
     }
 }
 

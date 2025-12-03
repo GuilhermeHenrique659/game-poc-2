@@ -277,11 +277,11 @@ void World::Presenter(float delta)
     {
         for (auto &[id, rp] : entityManager->getPlayers())
         {
-            if (rp->GetAttackHitbox().has_value())
-            {
-                DrawRectangleRec(rp->GetAttackHitbox().value(), Fade(YELLOW, 0.5f));
-            }
-
+            /*             if (rp->GetAttackHitbox().has_value())
+                        {
+                            DrawRectangleRec(rp->GetAttackHitbox().value(), Fade(YELLOW, 0.5f));
+                        }
+             */
             // DrawRectangleRec(rp->GetCollisionRectangle(), Fade(RED, 0.5f));
             if (!network->isServer && id == entityManager->currentPlayerId)
                 continue;
