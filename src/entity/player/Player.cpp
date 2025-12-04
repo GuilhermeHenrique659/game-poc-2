@@ -94,7 +94,7 @@ void Player::Attack()
     }
 }
 
-void Player::move(Camera2D camera, std::vector<Rectangle> collisionRectangles)
+void Player::move(std::vector<Rectangle> collisionRectangles)
 {
 
     Vector2 moveDir = {0, 0};

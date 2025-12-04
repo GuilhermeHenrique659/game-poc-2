@@ -136,10 +136,7 @@ void World::Setup()
     entityManager->addListner("hitted", std::make_unique<PlayerHittedObserver>(entityManager));
     player->subscribe("player_attacked", std::make_unique<PlayerAttacks>(entityManager));
 
-    camera.zoom = 1.0f;
-    camera.rotation = 0.0f;
-    camera.offset = {(float)GetScreenWidth() / 2.0f, (float)GetScreenHeight() / 2.0f};
-    camera.target = Vector2{player->GetPosition().x + SPRITE_FRAME_WIDHT / 2, player->GetPosition().y - SPRITEH_FRAME_HEIGHT / 2};
+    camera = CameraComponent::create(player->GetPosition(), player->GetDestReactangle());
 }
 
 void World::Update(float delta)
@@ -148,6 +145,9 @@ void World::Update(float delta)
     std::vector<std::shared_ptr<Player>> players;
 
     std::vector<Rectangle> collisionRectangles;
+
+    camera->update(player->GetPosition(), player->GetDestReactangle());
+
     for (const auto &pair : entityManager->getPlayers())
     {
         if (player->IsHitted(pair.second->GetCollisionRectangle()))
@@ -168,15 +168,7 @@ void World::Update(float delta)
     player->Attack();
 
     if (player->GetPlayerState() != ATTACK)
-        player->move(camera, collisionRectangles);
-
-    Vector2 cameraTarget = Vector2{
-        player->GetPosition().x + player->GetDestReactangle().width / 2,
-        player->GetPosition().y + player->GetDestReactangle().height - SPRITEH_FRAME_HEIGHT / 4};
-    camera.target = Vector2Lerp(camera.target, cameraTarget, 5.0f * delta);
-
-    camera.zoom = expf(logf(camera.zoom) + ((float)GetMouseWheelMove() * 0.1f));
-
+        player->move(collisionRectangles);
     for (const auto &[id, e] : entityManager->getEnemies())
     {
         if (e->health == 0)
@@ -186,24 +178,7 @@ void World::Update(float delta)
         e->move(collisionRectangles, players);
     }
 
-    if (camera.zoom > 3.0f)
-        camera.zoom = 3.0f;
-    else if (camera.zoom < 0.1f)
-        camera.zoom = 0.1f;
-
     static float sendTimer = 0;
-    sendTimer += delta;
-
-    if (sendTimer > 1.0f / 40.0f)
-    {
-        entityManager->broadcastPlayer(EventName::PLAYER_MOVED, {
-                                                                    .id = entityManager->currentPlayerId,
-                                                                    .position = player->GetPosition(),
-                                                                    .direction = player->GetPlayerDirection(),
-                                                                    .state = player->GetPlayerState(),
-                                                                });
-        sendTimer = 0;
-    }
 
     if (IsKeyPressed(KEY_H))
     {
@@ -244,7 +219,7 @@ void World::Presenter(float delta)
 
     std::shared_ptr<Player> player = entityManager->getPlayer(entityManager->currentPlayerId);
 
-    BeginMode2D(camera);
+    BeginMode2D(camera->getCamera());
     for (int i = 0; i < 10; i++)
     {
         for (int j = 0; j < 10; j++)
@@ -277,12 +252,6 @@ void World::Presenter(float delta)
     {
         for (auto &[id, rp] : entityManager->getPlayers())
         {
-            /*             if (rp->GetAttackHitbox().has_value())
-                        {
-                            DrawRectangleRec(rp->GetAttackHitbox().value(), Fade(YELLOW, 0.5f));
-                        }
-             */
-            // DrawRectangleRec(rp->GetCollisionRectangle(), Fade(RED, 0.5f));
             if (!network->isServer && id == entityManager->currentPlayerId)
                 continue;
 
@@ -306,11 +275,6 @@ void World::Presenter(float delta)
     {
         for (auto &[id, rp] : entityManager->getEnemies())
         {
-            /*             if (rp->GetAttackHitbox().has_value())
-                        {
-                            DrawRectangleRec(rp->GetAttackHitbox().value(), Fade(YELLOW, 0.5f));
-                        }
-             */
             rp->Animate();
             auto remoteSprite = rp->GetEnemySprite();
 

@@ -1,5 +1,4 @@
 #pragma once
-#include "../../common/Subject.h"
 #include "raylib.h"
 #include "EnemySpriteAnimation.h"
 #include "EnemyState.h"
@@ -8,8 +7,9 @@
 #include <optional>
 #include "../common/EntityPosition.h"
 #include "../common/EntityAttack.h"
+#include "../common/Entity.h"
 
-class Enemy : public Subject
+class Enemy : public Entity
 {
 private:
     EnemyState enemyState = EnemyState::IDLE;
@@ -21,9 +21,10 @@ private:
 public:
     int health = 5;
 
-    Enemy(Vector2 position, Rectangle destRec, EnemySpriteAnimation enemySpriteAnimation) : enemySpriteAnimation(enemySpriteAnimation),
-                                                                                            enemyPosition(new EntityPosition(position, Direction::DOWN, destRec, {position.x, position.y, destRec.width / 4, destRec.height / 4}, 3.0f)),
-                                                                                            basicAttack(new EntityAttack(destRec.width * 0.5f, destRec.height * 0.5f, 60.0f, 0.8f, 1.28f)) {};
+    Enemy(uint32_t id, Vector2 position, Rectangle destRec, EnemySpriteAnimation enemySpriteAnimation) : Entity("Enemy", id),
+                                                                                                         enemySpriteAnimation(enemySpriteAnimation),
+                                                                                                         enemyPosition(new EntityPosition(position, Direction::DOWN, destRec, {position.x, position.y, destRec.width / 4, destRec.height / 4}, 3.0f)),
+                                                                                                         basicAttack(new EntityAttack(destRec.width * 0.5f, destRec.height * 0.5f, 60.0f, 0.8f, 1.28f)) {}
     ~Enemy() = default;
 
     Rectangle GetDestReactangle();

@@ -3,13 +3,14 @@
 #include "../../entity/player/Player.h"
 #include "../../common/ResourceManager.h"
 #include "../../entity/EntityManager.h"
+#include "../../components/Camera.cpp"
 #include "raylib.h"
 
 class World : public Scene
 {
 private:
     std::shared_ptr<Player> player;
-    Camera2D camera = {0};
+    CameraComponent *camera;
     EntityManager *entityManager;
     Network *network;
 

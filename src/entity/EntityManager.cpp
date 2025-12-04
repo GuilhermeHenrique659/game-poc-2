@@ -46,11 +46,6 @@ uint32_t EntityManager::createEnemy(Vector2 position, uint32_t id)
         SPRITE_FRAME_WIDHT,
         SPRITEH_FRAME_HEIGHT};
 
-    auto enemy = std::make_shared<Enemy>(
-        position,
-        destRec,
-        EnemySpriteAnimation());
-
     uint32_t newId;
     TraceLog(LOG_INFO, "id passed: %d", id);
 
@@ -62,6 +57,12 @@ uint32_t EntityManager::createEnemy(Vector2 position, uint32_t id)
     {
         newId = enemies.size() + 1;
     }
+
+    auto enemy = std::make_shared<Enemy>(
+        newId,
+        position,
+        destRec,
+        EnemySpriteAnimation());
 
     TraceLog(LOG_INFO, "Enemy Create with id: %d", newId);
     enemies[newId] = enemy;
@@ -77,11 +78,6 @@ uint32_t EntityManager::createPlayer(Vector2 position, uint32_t id)
         SPRITE_FRAME_WIDHT,
         SPRITEH_FRAME_HEIGHT};
 
-    auto player = std::make_shared<Player>(
-        position,
-        destRec,
-        PlayerSpriteAnimation());
-
     uint32_t newId;
     TraceLog(LOG_INFO, "id passed: %d", id);
 
@@ -93,6 +89,12 @@ uint32_t EntityManager::createPlayer(Vector2 position, uint32_t id)
     {
         newId = players.size() + 1;
     }
+
+    auto player = std::make_shared<Player>(
+        newId,
+        position,
+        destRec,
+        PlayerSpriteAnimation());
 
     TraceLog(LOG_INFO, "Player Create with id: %d", newId);
     players[newId] = player;
