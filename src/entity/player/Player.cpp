@@ -1,9 +1,10 @@
 #include "Player.h"
 #include "raymath.h"
+#include "PlayerSpriteAnimation.cpp"
 #include "../../common/util/VectorUtil.h"
 #include "../../config.h"
 
-PlayerSpriteAnimation Player::GetPlayerSprite()
+EntityAnimationSprite Player::GetPlayerSprite()
 {
     return playerSpriteAnimation;
 }
@@ -138,5 +139,5 @@ void Player::SetPlayerDirection(Direction newPlayerDirection)
 
 void Player::Animate()
 {
-    playerSpriteAnimation.Animate((PlayerDirection)playerPosition->GetDirection(), playerState);
+    playerSpriteAnimation.Animate(playerPosition->GetDirection(), GetByState(playerState));
 }

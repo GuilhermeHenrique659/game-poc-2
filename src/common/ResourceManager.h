@@ -4,6 +4,7 @@
 #include "raylib.h"
 #include <string>
 #include <memory>
+#include "../entity/common/Direction.h"
 
 class ResourceManager
 {

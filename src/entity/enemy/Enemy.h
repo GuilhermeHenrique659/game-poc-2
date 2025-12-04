@@ -1,13 +1,15 @@
 #pragma once
 #include "raylib.h"
-#include "EnemySpriteAnimation.h"
 #include "EnemyState.h"
 #include "../player/Player.h"
+#include "EnemyDirection.h"
 #include <vector>
 #include <optional>
 #include "../common/EntityPosition.h"
 #include "../common/EntityAttack.h"
+#include "../common/Direction.h"
 #include "../common/Entity.h"
+#include "../common/EntityAnimationSprite.cpp"
 
 class Enemy : public Entity
 {
@@ -16,20 +18,20 @@ private:
     EntityPosition *enemyPosition;
     EntityAttack *basicAttack;
 
-    EnemySpriteAnimation enemySpriteAnimation;
+    EntityAnimationSprite enemySpriteAnimation;
 
 public:
     int health = 5;
 
-    Enemy(uint32_t id, Vector2 position, Rectangle destRec, EnemySpriteAnimation enemySpriteAnimation) : Entity("Enemy", id),
-                                                                                                         enemySpriteAnimation(enemySpriteAnimation),
-                                                                                                         enemyPosition(new EntityPosition(position, Direction::DOWN, destRec, {position.x, position.y, destRec.width / 4, destRec.height / 4}, 3.0f)),
-                                                                                                         basicAttack(new EntityAttack(destRec.width * 0.5f, destRec.height * 0.5f, 60.0f, 0.8f, 1.28f)) {}
+    Enemy(uint32_t id, Vector2 position, Rectangle destRec) : Entity("Enemy", id),
+                                                              enemySpriteAnimation(EntityAnimationSprite()),
+                                                              enemyPosition(new EntityPosition(position, Direction::DOWN, destRec, {position.x, position.y, destRec.width / 4, destRec.height / 4}, 3.0f)),
+                                                              basicAttack(new EntityAttack(destRec.width * 0.5f, destRec.height * 0.5f, 60.0f, 0.8f, 1.28f)) {}
     ~Enemy() = default;
 
     Rectangle GetDestReactangle();
     Vector2 GetPosition();
-    EnemySpriteAnimation GetEnemySprite();
+    EntityAnimationSprite GetEnemySprite();
 
     EnemyState GetEnemyState();
     void SetEnemyState(EnemyState state);

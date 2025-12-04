@@ -1,6 +1,5 @@
 #include "world.h"
 #include "raymath.h"
-#include "../../entity/player/PlayerSpriteAnimation.h"
 #include "../../common/util/VectorUtil.h"
 #include "../../network/Events.h"
 #include "../../network/Package.h"
@@ -238,7 +237,7 @@ void World::Presenter(float delta)
     }
 
     player->Animate();
-    PlayerSpriteAnimation sprite = player->GetPlayerSprite();
+    auto sprite = player->GetPlayerSprite();
 
     DrawTexturePro(
         sprite.GetCurrentTexture(),
@@ -259,7 +258,7 @@ void World::Presenter(float delta)
                 continue;
 
             rp->Animate();
-            PlayerSpriteAnimation remoteSprite = rp->GetPlayerSprite();
+            auto remoteSprite = rp->GetPlayerSprite();
 
             DrawTexturePro(
                 remoteSprite.GetCurrentTexture(),

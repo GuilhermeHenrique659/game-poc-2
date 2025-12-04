@@ -1,173 +1,57 @@
-#include "PlayerSpriteAnimation.h"
-#include "../../config.h"
-#include "math.h"
+#include "../common/EntityAnimationSprite.cpp"
+#include "PlayerState.h"
+#include <vector>
 
-struct SpriteSheetInfo
-{
-    int totalFrames;
-    int columns;
-    int rows;
-    float frameWidth;
-    float frameHeight;
+static const std::vector<std::pair<Direction, std::string>> directionNames = {
+    {Direction::DOWN, "down"},
+    {Direction::UP, "up"},
+    {Direction::LEFT, "left"},
+    {Direction::RIGHT, "right"},
+    {Direction::LEFT_UP, "up_left"},
+    {Direction::RIGHT_UP, "up_right"},
+    {Direction::LEFT_DOWN, "down_left"},
+    {Direction::RIGHT_DOWN, "down_right"},
 };
 
-SpriteSheetInfo CalculateSpriteSheet(Texture2D texture, int totalFrames)
+static EntitySpriteCollection MakeCollection(
+    const std::string &prefix,
+    int totalFrames = 16,
+    int columns = 4,
+    int rows = 4,
+    int frameSize = 320)
 {
-    SpriteSheetInfo info;
-    info.totalFrames = totalFrames;
+    EntitySpriteCollection collection;
 
-    info.columns = (int)sqrtf(totalFrames);
-    info.rows = totalFrames / info.columns;
+    for (const auto &[direction, name] : directionNames)
+    {
+        SpriteSheet sheet{
+            .totalFrames = totalFrames,
+            .columns = columns,
+            .rows = rows,
+            .frameWidth = frameSize,
+            .frameHeight = frameSize,
+            .textureName = prefix + "_" + name};
 
-    info.frameWidth = (float)texture.width / info.columns;
-    info.frameHeight = (float)texture.height / info.rows;
+        collection.registerSprite(direction, sheet);
+    }
 
-    return info;
+    return collection;
 }
 
-float GetFrameWidth(Texture2D texture, float frameCount)
+static EntitySpriteCollection GetByState(PlayerState state)
 {
-    return (float)texture.width / frameCount;
-}
-
-Rectangle PlayerSpriteAnimation::GetSourceRectangle()
-{
-    return sourceRectangle;
-}
-
-Texture2D PlayerSpriteAnimation::GetCurrentTexture()
-{
-    return currentTexture;
-}
-
-void PlayerSpriteAnimation::Reset()
-{
-    currentFrame = 0;
-    runningTime = 0.0f;
-}
-
-void PlayerSpriteAnimation::Animate(PlayerDirection playerDirection, PlayerState state)
-{
-    int totalFrames;
-
     switch (state)
     {
     case PlayerState::IDLE:
-        totalFrames = 16;
-        break;
+        return MakeCollection("idle_stand");
+
     case PlayerState::RUN:
-        totalFrames = 15;
-        break;
+        return MakeCollection("run");
+
     case PlayerState::ATTACK:
+        return MakeCollection("attack");
+
     default:
-        totalFrames = 16;
-        break;
+        return EntitySpriteCollection();
     }
-
-    const float frameTime = 0.08f;
-
-    std::string textureKey = "idle_stand_down";
-
-    switch (playerDirection)
-    {
-    case PlayerDirection::RIGHT:
-        if (state == IDLE)
-            textureKey = "idle_stand_right";
-        else if (state == ATTACK)
-            textureKey = "attack_right";
-        else
-            textureKey = "run_right";
-        break;
-    case PlayerDirection::Right_DOWN:
-        if (state == IDLE)
-            textureKey = "idle_stand_down_right";
-        else if (state == ATTACK)
-            textureKey = "attack_right_down";
-        else
-            textureKey = "run_right_down";
-        break;
-    case PlayerDirection::DOWN:
-        if (state == IDLE)
-            textureKey = "idle_stand_down";
-        else if (state == ATTACK)
-            textureKey = "attack_down";
-        else
-            textureKey = "run_down";
-        break;
-    case PlayerDirection::LEFT_DOWN:
-        if (state == IDLE)
-            textureKey = "idle_stand_down_left";
-        else if (state == ATTACK)
-            textureKey = "attack_left_down";
-        else
-            textureKey = "run_left_down";
-        break;
-    case PlayerDirection::LEFT:
-        if (state == IDLE)
-            textureKey = "idle_stand_left";
-        else if (state == ATTACK)
-            textureKey = "attack_left";
-        else
-            textureKey = "run_left";
-        break;
-    case PlayerDirection::LEFT_UP:
-        if (state == IDLE)
-            textureKey = "idle_stand_up_left";
-        else if (state == ATTACK)
-            textureKey = "attack_left_up";
-        else
-            textureKey = "run_left_up";
-        break;
-    case PlayerDirection::UP:
-        if (state == IDLE)
-            textureKey = "idle_stand_up";
-        else if (state == ATTACK)
-            textureKey = "attack_up";
-        else
-            textureKey = "run_up";
-        break;
-    case PlayerDirection::RIGHT_UP:
-        if (state == IDLE)
-            textureKey = "idle_stand_up_right";
-        else if (state == ATTACK)
-            textureKey = "attack_right_up";
-        else
-            textureKey = "run_right_up";
-        break;
-    default:
-        if (state == IDLE)
-            textureKey = "idle_stand_down";
-        else if (state == ATTACK)
-            textureKey = "attack_down";
-        else
-            textureKey = "run_down";
-        break;
-    }
-
-    currentTexture = ResourceManager::Get().GetTexture(textureKey);
-
-    SpriteSheetInfo sheet = CalculateSpriteSheet(currentTexture, totalFrames);
-    const int columns = sheet.columns;
-    const int rows = sheet.rows;
-
-    runningTime += GetFrameTime();
-    if (runningTime >= frameTime)
-    {
-        runningTime = 0.0f;
-
-        currentFrame++;
-        if (currentFrame >= totalFrames)
-        {
-            currentFrame = 0;
-        }
-    }
-
-    int columnFrame = currentFrame % columns;
-    int rowFrame = currentFrame / columns;
-
-    sourceRectangle = {
-        SPRITE_FRAME_WIDHT * columnFrame,
-        SPRITEH_FRAME_HEIGHT * rowFrame,
-        SPRITE_FRAME_WIDHT,
-        SPRITEH_FRAME_HEIGHT};
 }

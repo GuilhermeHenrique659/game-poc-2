@@ -61,8 +61,7 @@ uint32_t EntityManager::createEnemy(Vector2 position, uint32_t id)
     auto enemy = std::make_shared<Enemy>(
         newId,
         position,
-        destRec,
-        EnemySpriteAnimation());
+        destRec);
 
     TraceLog(LOG_INFO, "Enemy Create with id: %d", newId);
     enemies[newId] = enemy;
@@ -93,8 +92,7 @@ uint32_t EntityManager::createPlayer(Vector2 position, uint32_t id)
     auto player = std::make_shared<Player>(
         newId,
         position,
-        destRec,
-        PlayerSpriteAnimation());
+        destRec);
 
     TraceLog(LOG_INFO, "Player Create with id: %d", newId);
     players[newId] = player;

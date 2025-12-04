@@ -3,8 +3,9 @@
 #include <float.h>
 #include "../../common/util/VectorUtil.h"
 #include "../../config.h"
+#include "EnemySpriteAnimation.cpp"
 
-EnemySpriteAnimation Enemy::GetEnemySprite()
+EntityAnimationSprite Enemy::GetEnemySprite()
 {
     return enemySpriteAnimation;
 }
@@ -156,5 +157,5 @@ void Enemy::SetEnemyDirection(EnemyDirection newEnemyDirection)
 
 void Enemy::Animate()
 {
-    enemySpriteAnimation.Animate((EnemyDirection)enemyPosition->GetDirection(), enemyState);
+    enemySpriteAnimation.Animate(enemyPosition->GetDirection(), GetByState(enemyState));
 }

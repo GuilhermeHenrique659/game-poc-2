@@ -1,11 +1,12 @@
 #pragma once
+
 #include "../../common/Subject.h"
 #include "raylib.h"
-#include "PlayerSpriteAnimation.h"
 #include "PlayerState.h"
 #include <vector>
 #include <optional>
 #include "../common/EntityPosition.h"
+#include "../common/EntityAnimationSprite.cpp"
 #include "../common/EntityAttack.h"
 #include "../common/Entity.h"
 
@@ -15,7 +16,7 @@ private:
     PlayerState playerState = PlayerState::IDLE;
     EntityPosition *playerPosition;
 
-    PlayerSpriteAnimation playerSpriteAnimation;
+    EntityAnimationSprite playerSpriteAnimation;
     EntityAttack *basicAttack;
 
     float hitTimer = 0.0f;
@@ -27,15 +28,15 @@ private:
 public:
     int health = 10;
 
-    Player(uint32_t id, Vector2 position, Rectangle destRec, PlayerSpriteAnimation playerSpriteAnimation) : Entity("Player", id),
-                                                                                                            playerSpriteAnimation(playerSpriteAnimation),
-                                                                                                            playerPosition(new EntityPosition(position, Direction::DOWN, destRec, {position.x, position.y, destRec.width / 4, destRec.height / 4}, 4.0f)),
-                                                                                                            basicAttack(new EntityAttack(destRec.width * 0.5f, destRec.height * 0.5f, 60.0f, 0.8f, 1.28f)) {};
+    Player(uint32_t id, Vector2 position, Rectangle destRec) : Entity("Player", id),
+                                                               playerSpriteAnimation(EntityAnimationSprite()),
+                                                               playerPosition(new EntityPosition(position, Direction::DOWN, destRec, {position.x, position.y, destRec.width / 4, destRec.height / 4}, 4.0f)),
+                                                               basicAttack(new EntityAttack(destRec.width * 0.5f, destRec.height * 0.5f, 60.0f, 0.8f, 1.28f)) {};
     ~Player() = default;
 
     Rectangle GetDestReactangle();
     Vector2 GetPosition();
-    PlayerSpriteAnimation GetPlayerSprite();
+    EntityAnimationSprite GetPlayerSprite();
 
     PlayerState GetPlayerState();
     void SetPlayerState(PlayerState state);

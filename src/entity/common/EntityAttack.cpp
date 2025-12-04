@@ -20,7 +20,7 @@ void EntityAttack::createAttackbox(EntityPosition *entityPosition)
     case Direction::RIGHT:
         attackbox = rightAttackbox;
         break;
-    case Direction::Right_DOWN:
+    case Direction::RIGHT_DOWN:
         attackbox = rightAttackbox;
         break;
     case Direction::RIGHT_UP:
