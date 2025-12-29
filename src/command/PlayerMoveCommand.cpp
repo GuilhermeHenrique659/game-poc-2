@@ -6,7 +6,7 @@ void PlayerMoveCommand::Execute(uint32_t player_id)
     TraceLog(LOG_INFO, "Executing PlayerMoveCommand for player ID: %d", player_id);
     TraceLog(LOG_INFO, "entity manger address: %p", entity_manager.get());
 
-    auto entities = entity_manager->GetEntity<Player>(player_id);
+    //  auto entities = entity_manager->GetEntity<Player>(player_id);
 
     /*     auto player = entity_manager->GetEntity<Player>(player_id);
 
