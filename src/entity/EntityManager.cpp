@@ -25,12 +25,13 @@ void EntityManager::RemoveEntity(uint32_t entityId)
     entities.erase(entityId);
 }
 
-std::optional<std::shared_ptr<Entity>> EntityManager::GetEntity(uint32_t entityId)
+template <typename T>
+std::optional<std::shared_ptr<T>> EntityManager::GetEntity(uint32_t entityId)
 {
     if (entities.find(entityId) != entities.end())
     {
-        return std::optional<std::shared_ptr<Entity>>(entities[entityId]);
+        return std::optional<std::shared_ptr<T>>(std::dynamic_pointer_cast<T>(entities[entityId]));
     }
 
-    return std::optional<std::shared_ptr<Entity>>();
+    return std::optional<std::shared_ptr<T>>();
 }

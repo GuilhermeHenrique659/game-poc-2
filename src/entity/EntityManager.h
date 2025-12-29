@@ -19,6 +19,9 @@ public:
     void RemoveEntity(uint32_t entity_id);
 
     uint32_t GetEntityId();
-    std::optional<std::shared_ptr<Entity>> GetEntity(uint32_t entity_id);
+
+    template <typename T>
+    std::optional<std::shared_ptr<T>> GetEntity(uint32_t entity_id);
+
     std::unordered_map<std::uint32_t, std::shared_ptr<Entity>> &GetEntities();
 };

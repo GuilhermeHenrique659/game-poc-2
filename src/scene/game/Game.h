@@ -8,8 +8,10 @@
 class Game : public Scene
 {
 private:
-    std::unique_ptr<EntityManager> entity_manager;
+    std::shared_ptr<EntityManager> entity_manager;
     std::unique_ptr<ViewManager> view_manager;
+
+    uint32_t local_player_id;
 
 public:
     Game(GameState &gameState) : Scene(gameState) {};
