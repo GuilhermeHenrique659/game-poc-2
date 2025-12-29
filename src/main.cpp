@@ -1,8 +1,10 @@
 // main.cpp
 #include <raylib_win.h>
 #include "network/Network.h"
+#include <tmxlite/Map.hpp>
+#include <tmxlite/TileLayer.hpp>
 
-#include "common/Subject.h" // seu header com Entity e Observer
+#include "common/Subject.h"
 #include "common/ui/Button.h"
 #include "common/Scene.h"
 #include "common/GameState.h"
@@ -20,6 +22,15 @@ int main()
 {
     const int screenWidth = 1270;
     const int screenHeight = 720;
+    tmx::Map map;
+    if (!map.load("resources/map.tmx"))
+    {
+        return 1;
+    }
+
+    TraceLog(LOG_INFO, "Map version: %d.%d", map.getVersion().upper, map.getVersion().lower);
+
+    TraceLog(LOG_INFO, "Map loaded successfully.");
 
     Network *network = new Network();
     EntityManager *entityManager = new EntityManager(network);

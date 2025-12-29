@@ -3,7 +3,7 @@ CXXFLAGS = -std=c++20 -g -O0 -Wall -Iinclude
 LDFLAGS  = -Llib
 
 # Windows (MinGW)
-LDLIBS   = -lraylib -lopengl32 -lgdi32 -lwinmm -lenet -lws2_32
+LDLIBS   = -lraylib  -lopengl32 -lgdi32 -lwinmm -lenet -ltmxlite -lws2_32 
 
 # Linux → descomente a linha abaixo e comente a de cima
 # LDLIBS   = -lraylib -lGL -lm -lpthread -ldl -lrt -lX11

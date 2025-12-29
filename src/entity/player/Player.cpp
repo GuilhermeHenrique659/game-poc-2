@@ -1,18 +1,7 @@
 #include "Player.h"
 #include "raymath.h"
-#include "PlayerSpriteAnimation.cpp"
 #include "../../common/util/VectorUtil.h"
 #include "../../config.h"
-
-EntityAnimationSprite Player::GetPlayerSprite()
-{
-    return playerSpriteAnimation;
-}
-
-Direction Player::GetPlayerDirection()
-{
-    return playerPosition->GetDirection();
-}
 
 PlayerState Player::GetPlayerState()
 {
@@ -21,30 +10,12 @@ PlayerState Player::GetPlayerState()
 
 void Player::SetPlayerState(PlayerState state)
 {
-    if (state == ATTACK)
-        basicAttack->attack(playerPosition);
+    if (playerState == state)
+        return;
 
     playerState = state;
-}
 
-Vector2 Player::GetPosition()
-{
-    return playerPosition->GetPostion();
-}
-
-Rectangle &Player::GetCollisionRectangle()
-{
-    return playerPosition->GetCollisionRectangle();
-}
-
-Rectangle Player::GetDestReactangle()
-{
-    return playerPosition->GetPositionRectangle();
-}
-
-void Player::UpdatePosition(Vector2 newPosition)
-{
-    playerPosition->UpdatePosition(newPosition);
+    _publish("state_changed", std::any(playerState));
 }
 
 bool Player::IsHitted(Rectangle rect)
@@ -64,7 +35,7 @@ void Player::OnHit(Rectangle rect)
         return;
     }
 
-    if (CheckCollisionRecs(playerPosition->GetCollisionRectangle(), rect))
+    if (CheckCollisionRecs(entityPosition->GetCollisionRectangle(), rect))
     {
         TraceLog(LOG_INFO, "Hitted");
         health -= 1;
@@ -81,17 +52,15 @@ void Player::Attack()
 {
     if (IsKeyDown(KEY_SPACE) && playerState != ATTACK)
     {
-        playerState = ATTACK;
-        playerSpriteAnimation.Reset();
-        basicAttack->attack(playerPosition);
+        SetPlayerState(ATTACK);
+        basicAttack->attack(entityPosition);
 
         _publish("player_attacked", std::any(basicAttack->getAttackbox()));
     }
 
-    if (playerState == ATTACK && basicAttack->attack(playerPosition))
+    if (playerState == ATTACK && basicAttack->attack(entityPosition))
     {
-        playerState = IDLE;
-        playerSpriteAnimation.Reset();
+        SetPlayerState(IDLE);
     }
 }
 
@@ -121,23 +90,13 @@ void Player::move(std::vector<Rectangle> collisionRectangles)
         moveDir.y += -1;
     }
 
-    if (playerPosition->MoveAndCollision(moveDir, collisionRectangles))
+    if (entityPosition->MoveAndCollision(moveDir, collisionRectangles))
     {
-        playerState = RUN;
-        _publish("moved", std::any(playerPosition->GetPostion()));
+        SetPlayerState(RUN);
+        _publish("moved", std::any(entityPosition->GetPostion()));
     }
     else
     {
-        playerState = IDLE;
+        SetPlayerState(IDLE);
     }
-}
-
-void Player::SetPlayerDirection(Direction newPlayerDirection)
-{
-    playerPosition->SetPlayerDirection(newPlayerDirection);
-}
-
-void Player::Animate()
-{
-    playerSpriteAnimation.Animate(playerPosition->GetDirection(), GetByState(playerState));
 }

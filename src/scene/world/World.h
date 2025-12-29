@@ -4,6 +4,7 @@
 #include "../../common/ResourceManager.h"
 #include "../../entity/EntityManager.h"
 #include "../../components/Camera.cpp"
+#include "../../view/EntityAnimationManager.h"
 #include "raylib.h"
 
 class World : public Scene

@@ -4,6 +4,7 @@
 #include "../../network/Events.h"
 #include "../../network/Package.h"
 #include "../../config.h"
+#include "../../view/player/PlayerSpriteAnimation.cpp"
 
 class PlayerAttacks : public Observer
 {
@@ -26,48 +27,6 @@ public:
     }
 };
 
-class PlayerMovedObserver : public Observer
-{
-private:
-    EntityManager *entityManager;
-
-public:
-    PlayerMovedObserver(EntityManager *entityManager) : entityManager(entityManager) {}
-
-    void notify(const std::any &data)
-    {
-        RemotePacket pkg = std::any_cast<RemotePacket>(data);
-        PlayerDto pm{};
-        memcpy(&pm, pkg.data, sizeof(PlayerDto));
-
-        if (pm.id != entityManager->currentPlayerId)
-        {
-            entityManager->updatePlayer(pm);
-        }
-    }
-};
-
-class PlayerHittedObserver : public Observer
-{
-private:
-    EntityManager *entityManager;
-
-public:
-    PlayerHittedObserver(EntityManager *entityManager) : entityManager(entityManager) {}
-
-    void notify(const std::any &data)
-    {
-        RemotePacket pkg = std::any_cast<RemotePacket>(data);
-        PlayerDto pm{};
-        memcpy(&pm, pkg.data, sizeof(PlayerDto));
-
-        if (pm.id == entityManager->currentPlayerId)
-        {
-            TraceLog(LOG_INFO, "hitted");
-        }
-    }
-};
-
 class OnConnected : public Observer
 {
 private:
@@ -85,7 +44,7 @@ public:
         PlayerDto clientDto = {
             .id = clientId,
             .position = clientPlayer->GetPosition(),
-            .direction = clientPlayer->GetPlayerDirection(),
+            .direction = clientPlayer->GetEntityDirection(),
             .state = clientPlayer->GetPlayerState(),
         };
 
@@ -131,8 +90,6 @@ void World::Setup()
     entityManager->currentPlayerId = playerId;
     auto player = entityManager->getPlayer(playerId);
 
-    entityManager->addListner("player_moved", std::make_unique<PlayerMovedObserver>(entityManager));
-    entityManager->addListner("hitted", std::make_unique<PlayerHittedObserver>(entityManager));
     player->subscribe("player_attacked", std::make_unique<PlayerAttacks>(entityManager));
 
     camera = CameraComponent::create(player->GetPosition(), player->GetDestReactangle());
@@ -149,13 +106,6 @@ void World::Update(float delta)
 
     for (const auto &pair : entityManager->getPlayers())
     {
-        if (player->IsHitted(pair.second->GetCollisionRectangle()))
-            entityManager->broadcastPlayer(EventName::HITTED, {
-                                                                  .id = pair.first,
-                                                                  .position = pair.second->GetPosition(),
-                                                                  .direction = pair.second->GetPlayerDirection(),
-                                                                  .state = pair.second->GetPlayerState(),
-                                                              });
         players.push_back(pair.second);
 
         if (pair.first == entityManager->currentPlayerId)
@@ -178,6 +128,13 @@ void World::Update(float delta)
     }
 
     static float sendTimer = 0;
+    sendTimer += delta;
+
+    if (sendTimer > 1.0f / 40.0f)
+    {
+        entityManager->broadcastSnapshot();
+        sendTimer = 0;
+    }
 
     if (IsKeyPressed(KEY_H))
     {
@@ -236,12 +193,13 @@ void World::Presenter(float delta)
         }
     }
 
-    player->Animate();
-    auto sprite = player->GetPlayerSprite();
+    entityManager->getAnimationManager()->Animate(player->id, player->GetEntityDirection(), GetByState(player->GetPlayerState()));
+
+    auto sprite = entityManager->getAnimationManager()->GetAnimation(player->id);
 
     DrawTexturePro(
-        sprite.GetCurrentTexture(),
-        sprite.GetSourceRectangle(),
+        sprite->GetCurrentTexture(),
+        sprite->GetSourceRectangle(),
         player->GetDestReactangle(),
         {0, 0},
         0.0f,
@@ -257,12 +215,13 @@ void World::Presenter(float delta)
             if (network->isServer && id == entityManager->currentPlayerId)
                 continue;
 
-            rp->Animate();
-            auto remoteSprite = rp->GetPlayerSprite();
+            entityManager->getAnimationManager()->Animate(rp->id, rp->GetEntityDirection(), GetByState(rp->GetPlayerState()));
+
+            auto remoteSprite = entityManager->getAnimationManager()->GetAnimation(rp->id);
 
             DrawTexturePro(
-                remoteSprite.GetCurrentTexture(),
-                remoteSprite.GetSourceRectangle(),
+                remoteSprite->GetCurrentTexture(),
+                remoteSprite->GetSourceRectangle(),
                 rp->GetDestReactangle(),
                 {0, 0},
                 0,
@@ -272,15 +231,15 @@ void World::Presenter(float delta)
 
     if (!entityManager->getEnemies().empty())
     {
-        for (auto &[id, rp] : entityManager->getEnemies())
+        for (auto &[id, re] : entityManager->getEnemies())
         {
-            rp->Animate();
-            auto remoteSprite = rp->GetEnemySprite();
+            entityManager->getAnimationManager()->Animate(re->id, re->GetEntityDirection(), GetByState((PlayerState)re->GetEnemyState()));
+            auto remoteSprite = entityManager->getAnimationManager()->GetAnimation(re->id);
 
             DrawTexturePro(
-                remoteSprite.GetCurrentTexture(),
-                remoteSprite.GetSourceRectangle(),
-                rp->GetDestReactangle(),
+                remoteSprite->GetCurrentTexture(),
+                remoteSprite->GetSourceRectangle(),
+                re->GetDestReactangle(),
                 {0, 0},
                 0,
                 Fade(RED, 0.8f));

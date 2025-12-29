@@ -1,16 +1,35 @@
 #pragma once;
 
 #include "../../common/Subject.h"
+#include "./EntityPosition.h"
+#include "./Direction.h"
+#include "raylib.h"
 #include <cstdint>
 #include <string>
 
 class Entity : public Subject
 {
 private:
+protected:
+    EntityPosition *entityPosition;
+
 public:
     uint32_t id;
     std::string label;
 
-    Entity(std::string label, uint32_t id) : id(id), label(label) {};
-    ~Entity() = default;
+    Entity(std::string label, uint32_t id, EntityPosition *entityPosition) : id(id), label(label), entityPosition(entityPosition) {};
+    ~Entity()
+    {
+        delete entityPosition;
+    };
+
+    Direction GetEntityDirection();
+    void SetDirection(Direction direction);
+
+    void UpdatePosition(Vector2 position);
+
+    Rectangle &GetCollisionRectangle();
+
+    Rectangle GetDestReactangle();
+    Vector2 GetPosition();
 };

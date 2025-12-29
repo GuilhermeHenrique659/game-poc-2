@@ -30,7 +30,7 @@ public:
     Direction GetDirection() const { return direction; };
     Rectangle GetPositionRectangle() const { return positionRectangle; };
     Rectangle &GetCollisionRectangle() { return collisionRectangle; };
-    void SetPlayerDirection(Direction newDirection) { direction = newDirection; };
+    void SetDirection(Direction newDirection) { direction = newDirection; };
 
     void UpdatePosition(Vector2 newPosition);
     bool MoveAndCollision(Vector2 moveDirection, std::vector<Rectangle> collisionRectangles);

@@ -3,17 +3,6 @@
 #include <float.h>
 #include "../../common/util/VectorUtil.h"
 #include "../../config.h"
-#include "EnemySpriteAnimation.cpp"
-
-EntityAnimationSprite Enemy::GetEnemySprite()
-{
-    return enemySpriteAnimation;
-}
-
-EnemyDirection Enemy::GetEnemyDirection()
-{
-    return (EnemyDirection)enemyPosition->GetDirection();
-}
 
 EnemyState Enemy::GetEnemyState()
 {
@@ -22,25 +11,12 @@ EnemyState Enemy::GetEnemyState()
 
 void Enemy::SetEnemyState(EnemyState state)
 {
-    if (state == EnemyState::ATTACK)
-        basicAttack->attack(enemyPosition);
+    if (state == enemyState)
+        return;
 
     enemyState = state;
-}
 
-Vector2 Enemy::GetPosition()
-{
-    return enemyPosition->GetPostion();
-}
-
-Rectangle &Enemy::GetCollisionRectangle()
-{
-    return enemyPosition->GetCollisionRectangle();
-}
-
-Rectangle Enemy::GetDestReactangle()
-{
-    return enemyPosition->GetPositionRectangle();
+    _publish("state_changed", std::any(enemyState));
 }
 
 bool Enemy::IsHitted(Rectangle rect)
@@ -53,7 +29,7 @@ bool Enemy::IsHitted(Rectangle rect)
 
 void Enemy::OnHit(Rectangle rect)
 {
-    if (CheckCollisionRecs(enemyPosition->GetCollisionRectangle(), rect))
+    if (CheckCollisionRecs(entityPosition->GetCollisionRectangle(), rect))
     {
         TraceLog(LOG_INFO, "Enemy hitted");
         health -= 1;
@@ -69,30 +45,23 @@ void Enemy::Attack()
 {
     if (enemyState != EnemyState::ATTACK)
     {
-        enemyState = EnemyState::ATTACK;
-        enemySpriteAnimation.Reset();
-        basicAttack->attack(enemyPosition);
+        SetEnemyState(EnemyState::ATTACK);
+        basicAttack->attack(entityPosition);
 
         _publish("player_attacked", std::any(basicAttack->getAttackbox()));
     }
 
-    if (enemyState == EnemyState::ATTACK && basicAttack->attack(enemyPosition))
+    if (enemyState == EnemyState::ATTACK && basicAttack->attack(entityPosition))
     {
-        enemyState = EnemyState::IDLE;
-        enemySpriteAnimation.Reset();
+        SetEnemyState(EnemyState::IDLE);
     }
-}
-
-void Enemy::UpdatePosition(Vector2 newPostion)
-{
-    enemyPosition->UpdatePosition(newPostion);
 }
 
 void Enemy::move(std::vector<Rectangle> &collisionRectangles, const std::vector<std::shared_ptr<Player>> players)
 {
     if (players.empty())
     {
-        enemyState = EnemyState::IDLE;
+        SetEnemyState(EnemyState::IDLE);
         return;
     }
 
@@ -102,7 +71,7 @@ void Enemy::move(std::vector<Rectangle> &collisionRectangles, const std::vector<
 
     for (auto &p : players)
     {
-        float d = Vector2DistanceSqr(enemyPosition->GetPostion(), p->GetPosition());
+        float d = Vector2DistanceSqr(entityPosition->GetPostion(), p->GetPosition());
         if (d < closestDistSqr)
         {
             closestDistSqr = d;
@@ -117,7 +86,7 @@ void Enemy::move(std::vector<Rectangle> &collisionRectangles, const std::vector<
     }
 
     Vector2 targetPos = target->GetPosition();
-    Vector2 toTarget = Vector2Subtract(targetPos, enemyPosition->GetPostion());
+    Vector2 toTarget = Vector2Subtract(targetPos, entityPosition->GetPostion());
     float distance = Vector2Length(toTarget);
 
     const float STOP_DISTANCE = 50.0f; // para de tremer quando chega perto
@@ -130,15 +99,16 @@ void Enemy::move(std::vector<Rectangle> &collisionRectangles, const std::vector<
         // -------------------------------
         // PERSEGUIÇÃO
         // -------------------------------
-        if (enemyPosition->MoveAndCollision(moveDir, collisionRectangles))
+        if (entityPosition->MoveAndCollision(moveDir, collisionRectangles))
         {
-            enemyState = EnemyState::RUN;
+            SetEnemyState(EnemyState::RUN);
+            ;
 
-            _publish("moved", std::any(enemyPosition->GetPostion()));
+            _publish("moved", std::any(entityPosition->GetPostion()));
         }
         else
         {
-            enemyState = EnemyState::IDLE;
+            SetEnemyState(EnemyState::IDLE);
         }
     }
 
@@ -148,14 +118,4 @@ void Enemy::move(std::vector<Rectangle> &collisionRectangles, const std::vector<
         if (basicAttack->getAttackbox().has_value())
             target->OnHit(basicAttack->getAttackbox().value());
     }
-}
-
-void Enemy::SetEnemyDirection(EnemyDirection newEnemyDirection)
-{
-    enemyPosition->SetPlayerDirection((Direction)newEnemyDirection);
-}
-
-void Enemy::Animate()
-{
-    enemySpriteAnimation.Animate(enemyPosition->GetDirection(), GetByState(enemyState));
 }
