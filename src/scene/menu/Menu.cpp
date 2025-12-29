@@ -30,7 +30,7 @@ public:
     {
         TraceLog(LOG_INFO, "Start game!");
 
-        gameState.currentScene = "world";
+        gameState.currentScene = "game";
     }
 };
 

@@ -10,7 +10,7 @@
 #include "common/GameState.h"
 #include "common/ui/Hover.h"
 #include "scene/menu/Menu.h"
-#include "scene/world/World.h"
+#include "scene/game/Game.h"
 #include <unordered_map>
 #include "common/ResourceManager.h"
 
@@ -33,7 +33,6 @@ int main()
     TraceLog(LOG_INFO, "Map loaded successfully.");
 
     Network *network = new Network();
-    EntityManager *entityManager = new EntityManager(network);
 
     std::unordered_map<std::string, std::unique_ptr<Scene>> scenes;
 
@@ -80,7 +79,7 @@ int main()
     resourceManager.RegisterTexture("floor", "resources/sprites/floor.png");
 
     scenes["menu"] = std::make_unique<Menu>(gameState);
-    scenes["world"] = std::make_unique<World>(gameState, entityManager, network);
+    scenes["game"] = std::make_unique<Game>(gameState);
 
     std::unique_ptr<Scene> *currentScene = &scenes["menu"];
 
@@ -92,9 +91,9 @@ int main()
     while (!WindowShouldClose())
     {
         network->Update();
-        if (gameState.currentScene == "world")
+        if (gameState.currentScene == "game")
         {
-            currentScene = &scenes["world"];
+            currentScene = &scenes["game"];
         }
 
         currentScene->get()->Update(GetFrameTime());
