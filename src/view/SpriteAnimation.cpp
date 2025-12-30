@@ -27,7 +27,7 @@ void SpriteAnimation::Animate(SpriteCollection &sprite_collection, Direction dir
     const auto rows = sprite_sheet.rows;
 
     elapsed_time += GetFrameTime();
-    if (elapsed_time >= frame_time)
+    if (elapsed_time >= sprite_sheet.frame_time)
     {
         elapsed_time = 0.0f;
 

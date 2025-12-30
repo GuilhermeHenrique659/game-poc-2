@@ -11,6 +11,7 @@ struct SpriteSheet
     int total_frames;
     int columns;
     int rows;
+    float frame_time;
 };
 
 class SpriteCollection

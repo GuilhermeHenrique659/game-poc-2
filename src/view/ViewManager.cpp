@@ -6,7 +6,7 @@ void ViewManager::CreateView(std::shared_ptr<Entity> entity)
     auto sprite_animation = std::make_shared<SpriteAnimation>();
 
     auto view_observer = std::make_unique<ViewObserver>(sprite_animation);
-    entity->subscribe("position_changed", std::move(view_observer));
+    entity->subscribe("state_change", std::move(view_observer));
 
     entity_views[entity->id] = sprite_animation;
 }

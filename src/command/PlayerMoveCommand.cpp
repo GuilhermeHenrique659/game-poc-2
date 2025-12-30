@@ -8,7 +8,13 @@ void PlayerMoveCommand::Execute(uint32_t player_id)
     if (!option.has_value())
         return;
 
-    auto player = std::static_pointer_cast<Player>(option.value());
+    auto player = std::dynamic_pointer_cast<Player>(option.value());
+
+    if (player == nullptr)
+    {
+        TraceLog(LOG_WARNING, "PlayerMoveCommand: Entity is not a Player.");
+        return;
+    }
 
     Vector2 moveDir = {0, 0};
 
