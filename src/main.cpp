@@ -22,15 +22,6 @@ int main()
 {
     const int screenWidth = 1270;
     const int screenHeight = 720;
-    tmx::Map map;
-    if (!map.load("resources/map.tmx"))
-    {
-        return 1;
-    }
-
-    TraceLog(LOG_INFO, "Map version: %d.%d", map.getVersion().upper, map.getVersion().lower);
-
-    TraceLog(LOG_INFO, "Map loaded successfully.");
 
     Network *network = new Network();
 
@@ -45,6 +36,8 @@ int main()
     SetTargetFPS(60);
 
     ResourceManager &resourceManager = ResourceManager::Get();
+
+    resourceManager.AddMap("resources/map.tmx");
 
     // RUN
     resourceManager.RegisterTexture("run_down", "resources/sprites/char/run/Run_Down.png");
@@ -77,6 +70,7 @@ int main()
     resourceManager.RegisterTexture("attack_down_right", "resources/sprites/char/attack/Attack_01_Down_Right.png");
 
     resourceManager.RegisterTexture("floor", "resources/sprites/floor.png");
+    resourceManager.RegisterTexture("block", "resources/sprites/block_E.png");
 
     scenes["menu"] = std::make_unique<Menu>(gameState);
     scenes["game"] = std::make_unique<Game>(gameState);

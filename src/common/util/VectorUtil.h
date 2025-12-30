@@ -1,6 +1,6 @@
 #include "raylib.h"
 
-Vector2 IsoWorldToScreen(float x, float y);
+Vector2 IsoWorldToScreen(float x, float y, float w, float h);
 
 Vector2 ToIso(Vector2 v);
 

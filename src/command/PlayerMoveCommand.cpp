@@ -1,7 +1,7 @@
 #include "PlayerMoveCommand.h"
 #include "../entity/player/Player.h"
 
-void PlayerMoveCommand::Execute(uint32_t player_id)
+void PlayerMoveCommand::Execute(uint32_t player_id, const Inputs &input)
 {
     auto option = entity_manager->GetEntity(player_id);
 
@@ -18,22 +18,22 @@ void PlayerMoveCommand::Execute(uint32_t player_id)
 
     Vector2 moveDir = {0, 0};
 
-    if (IsKeyDown(KEY_UP))
+    if (input.move_up)
     {
         moveDir.x += -1;
         moveDir.y += -1;
     }
-    if (IsKeyDown(KEY_DOWN))
+    if (input.move_down)
     {
         moveDir.x += 1;
         moveDir.y += 1;
     }
-    if (IsKeyDown(KEY_LEFT))
+    if (input.move_left)
     {
         moveDir.x += -1;
         moveDir.y += 1;
     }
-    if (IsKeyDown(KEY_RIGHT))
+    if (input.move_right)
     {
         moveDir.x += 1;
         moveDir.y += -1;

@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "../entity/EntityManager.h"
+#include "../common/input/Inputs.h"
 
 class PlayerMoveCommand
 {
@@ -14,5 +15,5 @@ public:
     PlayerMoveCommand(std::shared_ptr<EntityManager> entity_manager) : entity_manager(entity_manager) {}
     ~PlayerMoveCommand() = default;
 
-    void Execute(uint32_t player_id);
+    void Execute(uint32_t player_id, const Inputs &input);
 };

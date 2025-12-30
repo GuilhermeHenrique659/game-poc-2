@@ -1,7 +1,7 @@
 #include "PlayerAttackCommand.h"
 #include "../entity/player/Player.h"
 
-void PlayerAttackCommand::Execute(uint32_t player_id)
+void PlayerAttackCommand::Execute(uint32_t player_id, const Inputs &input)
 {
     auto player_entity = entity_manager->GetEntity(player_id);
 
@@ -16,5 +16,6 @@ void PlayerAttackCommand::Execute(uint32_t player_id)
         return;
     }
 
-    player->Attack();
+    if (input.attack || player->GetState() == PlayerState::Attacking)
+        player->Attack();
 }

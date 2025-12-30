@@ -49,7 +49,7 @@ void Player::Move(Vector2 move_direction, std::vector<Rectangle> collision_recta
 
 void Player::Attack()
 {
-    if (current_state != PlayerState::Attacking && IsKeyDown(KEY_SPACE))
+    if (current_state != PlayerState::Attacking)
     {
         TraceLog(LOG_INFO, "Player %d attacking", id);
         entity_attack.attack(entityPosition.get());

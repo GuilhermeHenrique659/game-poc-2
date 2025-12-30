@@ -22,3 +22,21 @@ Texture2D &ResourceManager::GetTexture(const std::string &key)
     }
     return textures.at(key);
 }
+
+void ResourceManager::AddMap(const std::string &filePath)
+{
+    if (!map.load(filePath))
+    {
+        TraceLog(LOG_FATAL, "Cannot load map: %s", filePath.c_str());
+        return;
+    };
+
+    TraceLog(LOG_INFO, "Map version: %d.%d", map.getVersion().upper, map.getVersion().lower);
+
+    TraceLog(LOG_INFO, "Map loaded successfully.");
+}
+
+tmx::Map &ResourceManager::GetMap()
+{
+    return map;
+}
