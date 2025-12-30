@@ -25,6 +25,11 @@ Vector2 Entity::GetPosition()
     return entityPosition->GetPostion();
 }
 
+Vector2 Entity::GetEntityFeet()
+{
+    return entityPosition->GetEntityFeet();
+}
+
 Rectangle &Entity::GetCollisionRectangle()
 {
     return entityPosition->GetCollisionRectangle();

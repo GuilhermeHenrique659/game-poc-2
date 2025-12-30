@@ -14,7 +14,7 @@
 void Game::Setup()
 {
     local_player_id = entity_manager->GetEntityId();
-    auto player_position = std::make_unique<EntityPosition>(Vector2{100.0f, 100.0f}, Direction::DOWN, Rectangle{100.0f, 100.0f, 320.0f, 320.0f}, Rectangle{100.0f, 100.0f, 320.0f, 320.0f}, 6.0f);
+    auto player_position = std::make_unique<EntityPosition>(Vector2{400.0f, 400.0f}, Direction::DOWN, Rectangle{400.0f, 400.0f, 320.0f, 320.0f}, Rectangle{}, 6.0f);
     auto player = std::make_shared<Player>(local_player_id, "Player", std::move(player_position));
 
     entity_manager->AddEntity(player);
@@ -30,7 +30,7 @@ void Game::Update(float delta)
     auto local_player_inputs = input_manager->CaptureInput(local_player_id);
 
     auto move_command = std::make_unique<PlayerMoveCommand>(entity_manager);
-    move_command->Execute(local_player_id, local_player_inputs);
+    move_command->Execute(local_player_id, local_player_inputs, map->GetCollisionLines());
 
     auto attack_command = std::make_unique<PlayerAttackCommand>(entity_manager);
     attack_command->Execute(local_player_id, local_player_inputs);
@@ -44,8 +44,13 @@ void Game::Presenter(float delta)
 {
     BeginMode2D(world_camera->getCamera());
 
-    map->Draw("floor");
-    map->Draw("block");
+    map->Draw("ground");
+    map->Draw("wall");
+
+    for (auto &i : map->GetCollisionLines())
+    {
+        DrawLineV(i.start, i.end, RED);
+    }
 
     for (auto &[id, entity] : entity_manager->GetEntities())
     {
@@ -59,6 +64,11 @@ void Game::Presenter(float delta)
 
             auto texture = view->GetTexture();
             auto source_rect = view->GetSourceRectangle();
+
+            Vector2 entity_feet = entity->GetEntityFeet();
+            float collisionRadius = (entity->GetDestReactangle().width * 0.1f);
+
+            DrawCircleLinesV(entity_feet, collisionRadius, RED);
 
             DrawTexturePro(
                 texture,

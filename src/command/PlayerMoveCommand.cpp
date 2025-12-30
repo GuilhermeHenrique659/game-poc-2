@@ -1,7 +1,7 @@
 #include "PlayerMoveCommand.h"
 #include "../entity/player/Player.h"
 
-void PlayerMoveCommand::Execute(uint32_t player_id, const Inputs &input)
+void PlayerMoveCommand::Execute(uint32_t player_id, const Inputs &input, std::vector<CollisionLines> collision_lines)
 {
     auto option = entity_manager->GetEntity(player_id);
 
@@ -39,5 +39,5 @@ void PlayerMoveCommand::Execute(uint32_t player_id, const Inputs &input)
         moveDir.y += -1;
     }
 
-    player->Move(moveDir, {});
+    player->Move(moveDir, collision_lines);
 }

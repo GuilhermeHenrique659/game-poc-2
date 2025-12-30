@@ -76,14 +76,25 @@ void GameMap::Init()
                         (float)tileWidth,
                         (float)tileHeight};
 
-                    Rectangle tileRectangle = {screenPos.x, screenPos.y, (float)texture.width, (float)texture.height};
+                    Rectangle dest_rectangle = {screenPos.x, screenPos.y, (float)texture.width, (float)texture.height};
                     auto sprite = StaticSprite{
                         texture,
                         screenPos,
                         sourceRect,
-                        tileRectangle};
+                        dest_rectangle};
 
                     map_sprites[layer->getName()].push_back(sprite);
+
+                    for (auto &prop : layer->getProperties())
+                    {
+                        if (prop.getName() == "collision")
+                        {
+                            Vector2 start = {dest_rectangle.x, dest_rectangle.y + dest_rectangle.height / 2.0f};
+                            Vector2 end = {dest_rectangle.x + dest_rectangle.width, dest_rectangle.y + dest_rectangle.height / 2.0f};
+
+                            collisition_tiles_lines.push_back({start, end});
+                        }
+                    }
                 }
             }
         }
@@ -98,7 +109,7 @@ void GameMap::Draw(const std::string &layer_name)
     }
 }
 
-std::vector<Rectangle> GameMap::GetCollisionTiles()
+std::vector<CollisionLines> GameMap::GetCollisionLines()
 {
-    return collisition_tiles;
+    return collisition_tiles_lines;
 }

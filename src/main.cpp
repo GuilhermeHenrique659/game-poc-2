@@ -37,7 +37,7 @@ int main()
 
     ResourceManager &resourceManager = ResourceManager::Get();
 
-    resourceManager.AddMap("resources/map.tmx");
+    resourceManager.AddMap("resources/map/map.tmx");
 
     // RUN
     resourceManager.RegisterTexture("run_down", "resources/sprites/char/run/Run_Down.png");
@@ -71,6 +71,9 @@ int main()
 
     resourceManager.RegisterTexture("floor", "resources/sprites/floor.png");
     resourceManager.RegisterTexture("block", "resources/sprites/block_E.png");
+    resourceManager.RegisterTexture("ground", "resources/sprites/ground.png");
+    resourceManager.RegisterTexture("wall_1", "resources/sprites/wall_1.png");
+    resourceManager.RegisterTexture("wall_2", "resources/sprites/wall_2.png");
 
     scenes["menu"] = std::make_unique<Menu>(gameState);
     scenes["game"] = std::make_unique<Game>(gameState);

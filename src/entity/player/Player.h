@@ -1,8 +1,10 @@
 #pragma once
+#include "PlayerState.h"
+
 #include "../common/Entity.h"
 #include "../common/EntityPosition.h"
 #include "../common/EntityAttack.h"
-#include "PlayerState.h"
+#include "../../common/CollisionLines.h"
 
 class Player : public Entity
 {
@@ -22,7 +24,7 @@ public:
     ~Player() = default;
 
     void ChangeState(PlayerState new_state);
-    void Move(Vector2 move_direction, std::vector<Rectangle> collision_rectangles);
+    void Move(Vector2 move_direction, std::vector<CollisionLines> collision_lines);
     void Attack();
 
     PlayerState GetState() const;

@@ -32,12 +32,12 @@ PlayerState Player::GetState() const
     return current_state;
 }
 
-void Player::Move(Vector2 move_direction, std::vector<Rectangle> collision_rectangles)
+void Player::Move(Vector2 move_direction, std::vector<CollisionLines> collision_lines)
 {
     if (current_state == PlayerState::Attacking)
         return;
 
-    if (entityPosition->MoveAndCollision(move_direction, collision_rectangles))
+    if (entityPosition->MoveAndCollision(move_direction, collision_lines))
     {
         ChangeState(PlayerState::Running);
     }

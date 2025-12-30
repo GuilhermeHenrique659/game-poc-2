@@ -30,4 +30,5 @@ public:
 
     Rectangle GetDestReactangle();
     Vector2 GetPosition();
+    Vector2 GetEntityFeet();
 };
