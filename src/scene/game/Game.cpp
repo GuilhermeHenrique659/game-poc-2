@@ -21,6 +21,8 @@ void Game::Setup()
     view_manager->CreateView(player);
 
     world_camera = CameraComponent::create(player->GetPosition(), player->GetDestReactangle());
+
+    map->Init();
 }
 
 void Game::Update(float delta)
@@ -42,61 +44,9 @@ void Game::Presenter(float delta)
 {
     BeginMode2D(world_camera->getCamera());
 
-    auto &resource_manager = ResourceManager::Get();
-    auto &map = resource_manager.GetMap();
+    map->Draw("floor");
+    map->Draw("block");
 
-    const auto &layers = map.getLayers();
-    const auto &tileSets = map.getTilesets();
-
-    for (const auto &layer : layers)
-    {
-        if (layer->getType() == tmx::Layer::Type::Tile)
-        {
-            const auto &tile_layer = layer->getLayerAs<tmx::TileLayer>();
-            const auto &tiles = tile_layer.getTiles();
-
-            auto map_size = map.getTileCount();
-            auto tile_size = map.getTileSize();
-
-            for (unsigned int y = 0; y < map_size.y; ++y)
-            {
-                for (unsigned int x = 0; x < map_size.x; ++x)
-                {
-                    auto idx = y * map_size.x + x;
-                    auto gid = tiles[idx].ID;
-
-                    if (gid == 0)
-                        continue;
-
-                    Texture2D texture;
-
-                    switch (gid)
-                    {
-                    case 1:
-                        texture = resource_manager.GetTexture("floor");
-                        break;
-                    case 3:
-                        texture = resource_manager.GetTexture("block");
-                    default:
-                        break;
-                    }
-
-                    Vector2 screenPos = IsoWorldToScreen((float)x, (float)y, (float)tile_size.x, (float)tile_size.y);
-
-                    float offsetX = GetScreenWidth() / 2.0f;
-                    screenPos.x += offsetX;
-
-                    DrawTexturePro(
-                        texture,
-                        {0.0f, 0.0f, (float)texture.width, (float)texture.height},
-                        {screenPos.x, screenPos.y, (float)texture.width, (float)texture.height},
-                        {(float)texture.width / 2.0f, 0.0f},
-                        0.0f,
-                        WHITE);
-                }
-            }
-        }
-    }
     for (auto &[id, entity] : entity_manager->GetEntities())
     {
         auto view = view_manager->GetView(id);
@@ -119,5 +69,6 @@ void Game::Presenter(float delta)
                 Fade(WHITE, 0.8f));
         }
     }
+
     EndMode2D();
 }
