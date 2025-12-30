@@ -3,38 +3,35 @@
 
 void PlayerMoveCommand::Execute(uint32_t player_id)
 {
-    TraceLog(LOG_INFO, "Executing PlayerMoveCommand for player ID: %d", player_id);
-    TraceLog(LOG_INFO, "entity manger address: %p", entity_manager.get());
+    auto option = entity_manager->GetEntity(player_id);
 
-    //  auto entities = entity_manager->GetEntity<Player>(player_id);
+    if (!option.has_value())
+        return;
 
-    /*     auto player = entity_manager->GetEntity<Player>(player_id);
+    auto player = std::static_pointer_cast<Player>(option.value());
 
-        if (!player.has_value())
-            return;
+    Vector2 moveDir = {0, 0};
 
-        Vector2 moveDir = {0, 0};
+    if (IsKeyDown(KEY_UP))
+    {
+        moveDir.x += -1;
+        moveDir.y += -1;
+    }
+    if (IsKeyDown(KEY_DOWN))
+    {
+        moveDir.x += 1;
+        moveDir.y += 1;
+    }
+    if (IsKeyDown(KEY_LEFT))
+    {
+        moveDir.x += -1;
+        moveDir.y += 1;
+    }
+    if (IsKeyDown(KEY_RIGHT))
+    {
+        moveDir.x += 1;
+        moveDir.y += -1;
+    }
 
-        if (IsKeyDown(KEY_UP))
-        {
-            moveDir.x += -1;
-            moveDir.y += -1;
-        }
-        if (IsKeyDown(KEY_DOWN))
-        {
-            moveDir.x += 1;
-            moveDir.y += 1;
-        }
-        if (IsKeyDown(KEY_LEFT))
-        {
-            moveDir.x += -1;
-            moveDir.y += 1;
-        }
-        if (IsKeyDown(KEY_RIGHT))
-        {
-            moveDir.x += 1;
-            moveDir.y += -1;
-        }
-
-        player.value()->Move(moveDir, {}); */
+    player->Move(moveDir, {});
 }

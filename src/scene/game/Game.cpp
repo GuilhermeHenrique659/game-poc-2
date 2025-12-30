@@ -9,7 +9,8 @@ void Game::Setup()
     view_manager = std::make_unique<ViewManager>();
 
     local_player_id = entity_manager->GetEntityId();
-    auto player = std::make_shared<Player>(local_player_id, "Player", std::make_unique<EntityPosition>(Vector2{100.0f, 100.0f}, Direction::DOWN, Rectangle{100.0f, 100.0f, 320.0f, 320.0f}, Rectangle{100.0f, 100.0f, 320.0f, 320.0f}, 200.0f));
+    auto player_position = std::make_unique<EntityPosition>(Vector2{100.0f, 100.0f}, Direction::DOWN, Rectangle{100.0f, 100.0f, 320.0f, 320.0f}, Rectangle{100.0f, 100.0f, 320.0f, 320.0f}, 4.0f);
+    auto player = std::make_shared<Player>(local_player_id, "Player", std::move(player_position));
 
     entity_manager->AddEntity(player);
     view_manager->CreateView(player);
