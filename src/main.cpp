@@ -74,6 +74,7 @@ int main()
     resourceManager.RegisterTexture("ground", "resources/sprites/ground.png");
     resourceManager.RegisterTexture("wall_1", "resources/sprites/wall_1.png");
     resourceManager.RegisterTexture("wall_2", "resources/sprites/wall_2.png");
+    resourceManager.RegisterTexture("house", "resources/sprites/house.png");
 
     scenes["menu"] = std::make_unique<Menu>(gameState);
     scenes["game"] = std::make_unique<Game>(gameState);
