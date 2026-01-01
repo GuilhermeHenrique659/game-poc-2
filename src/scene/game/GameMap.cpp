@@ -120,11 +120,12 @@ void GameMap::Init()
                     float drawY = screenPos.y - texture.height + tile_size.y;
 
                     Rectangle dest_rectangle = {drawX, drawY, (float)texture.width, (float)texture.height};
-                    auto sprite = StaticSprite{
+                    auto sprite = Sprite{
                         texture,
-                        {drawX, drawY},
+                        {drawX, drawY + dest_rectangle.height * 0.9f},
                         sourceRect,
-                        dest_rectangle};
+                        dest_rectangle,
+                        "Static"};
 
                     map_sprites[layer->getName()].push_back(sprite);
                 }
@@ -144,4 +145,9 @@ void GameMap::Draw(const std::string &layer_name)
 std::vector<CollisionLines> GameMap::GetCollisionLines()
 {
     return collisition_tiles_lines;
+}
+
+std::vector<Sprite> &GameMap::GetSpritesByLayer(const std::string &layer_name)
+{
+    return map_sprites[layer_name];
 }

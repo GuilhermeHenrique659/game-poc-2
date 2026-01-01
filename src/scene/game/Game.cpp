@@ -3,6 +3,7 @@
 #include <tmxlite/Layer.hpp>
 #include <tmxlite/TileLayer.hpp>
 #include <tmxlite/ObjectGroup.hpp>
+#include <algorithm>
 
 #include "../../common/util/VectorUtil.h"
 #include "../../entity/player/Player.h"
@@ -25,6 +26,11 @@ void Game::Setup()
     map->Init();
 }
 
+bool sortSprite(const Sprite &a, const Sprite &b)
+{
+    return a.position.y < b.position.y;
+}
+
 void Game::Update(float delta)
 {
     auto local_player_inputs = input_manager->CaptureInput(local_player_id);
@@ -45,12 +51,13 @@ void Game::Presenter(float delta)
     BeginMode2D(world_camera->getCamera());
 
     map->Draw("ground");
-    map->Draw("wall");
 
-    for (auto &i : map->GetCollisionLines())
+    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
     {
-        DrawLineV(i.start, i.end, RED);
+        TraceLog(LOG_INFO, TextFormat("X: %f, Y: %f", GetMousePosition().x, GetMousePosition().y));
     }
+
+    std::vector<Sprite> drawables = map->GetSpritesByLayer("obj");
 
     for (auto &[id, entity] : entity_manager->GetEntities())
     {
@@ -70,14 +77,42 @@ void Game::Presenter(float delta)
 
             DrawCircleLinesV(entity_feet, collisionRadius, RED);
 
-            DrawTexturePro(
-                texture,
-                source_rect,
-                entity->GetDestReactangle(),
-                {0, 0},
-                0,
-                Fade(WHITE, 0.8f));
+            drawables.push_back({texture,
+                                 entity_feet,
+                                 source_rect,
+                                 entity->GetDestReactangle(),
+                                 "Entity"});
         }
+    }
+
+    std::sort(drawables.begin(), drawables.end(), sortSprite);
+
+    for (auto &sprite : drawables)
+    {
+        if (sprite.type == "Entity")
+        {
+            DrawRectangleLinesEx(sprite.dest_rectangle, 2, GREEN);
+
+            DrawText(
+                TextFormat("x: %.0f y: %.0f", sprite.dest_rectangle.x, sprite.dest_rectangle.y),
+                sprite.dest_rectangle.x,
+                sprite.dest_rectangle.y - 12,
+                10,
+                GREEN);
+        }
+
+        DrawTexturePro(
+            sprite.texture,
+            sprite.source_rectangle,
+            sprite.dest_rectangle,
+            {0, 0},
+            0,
+            WHITE);
+    }
+
+    for (auto &i : map->GetCollisionLines())
+    {
+        DrawLineV(i.start, i.end, RED);
     }
 
     EndMode2D();

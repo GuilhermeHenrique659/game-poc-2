@@ -69,12 +69,15 @@ int main()
     resourceManager.RegisterTexture("attack_down_left", "resources/sprites/char/attack/Attack_01_Down_Left.png");
     resourceManager.RegisterTexture("attack_down_right", "resources/sprites/char/attack/Attack_01_Down_Right.png");
 
-    resourceManager.RegisterTexture("floor", "resources/sprites/floor.png");
-    resourceManager.RegisterTexture("block", "resources/sprites/block_E.png");
-    resourceManager.RegisterTexture("ground", "resources/sprites/ground.png");
-    resourceManager.RegisterTexture("wall_1", "resources/sprites/wall_1.png");
-    resourceManager.RegisterTexture("wall_2", "resources/sprites/wall_2.png");
-    resourceManager.RegisterTexture("house", "resources/sprites/house.png");
+    resourceManager.RegisterTexture("floor_E", "resources/sprites/env/floor_E.png");
+    resourceManager.RegisterTexture("wall_E", "resources/sprites/env/wall_E.png");
+    resourceManager.RegisterTexture("wall_N", "resources/sprites/env/wall_N.png");
+    resourceManager.RegisterTexture("wall_S", "resources/sprites/env/wall_S.png");
+    resourceManager.RegisterTexture("wall_W", "resources/sprites/env/wall_W.png");
+    resourceManager.RegisterTexture("wallCorner_E", "resources/sprites/env/wallCorner_E.png");
+    resourceManager.RegisterTexture("wallCorner_N", "resources/sprites/env/wallCorner_N.png");
+    resourceManager.RegisterTexture("wallCorner_S", "resources/sprites/env/wallCorner_S.png");
+    resourceManager.RegisterTexture("wallCorner_W", "resources/sprites/env/wallCorner_W.png");
 
     scenes["menu"] = std::make_unique<Menu>(gameState);
     scenes["game"] = std::make_unique<Game>(gameState);
