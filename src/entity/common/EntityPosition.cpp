@@ -3,6 +3,29 @@
 #include "../../common/util/VectorUtil.h"
 #include "../../config.h"
 
+Vector2 EntityPosition::GetEntityFeet()
+{
+    return entity_feet;
+}
+
+Vector2 EntityPosition::CalculateEntityFeet(Vector2 new_position)
+{
+    return {new_position.x + (positionRectangle.width / 2.0f), new_position.y + (positionRectangle.height * 0.6f)};
+}
+
+bool EntityPosition::IsColliding(Vector2 position, std::vector<CollisionLines> collision_lines)
+{
+    entity_feet = CalculateEntityFeet(position);
+    float radius = (positionRectangle.width * 0.1f);
+    for (const auto &line : collision_lines)
+    {
+        if (CheckCollisionCircleLine(entity_feet, radius, line.start, line.end))
+            return true;
+    }
+
+    return false;
+}
+
 float EntityPosition::CalculateAngle(Vector2 &moveDir)
 {
     float angle = 0;
@@ -16,16 +39,6 @@ float EntityPosition::CalculateAngle(Vector2 &moveDir)
         angle += 360.0f;
 
     return angle;
-}
-
-Rectangle EntityPosition::GetFutureCollisionRectangle(Vector2 futurePosition) const
-{
-    Rectangle futureRect;
-    futureRect.x = futurePosition.x + (positionRectangle.width * COLLISION_OFFSET_X);
-    futureRect.y = futurePosition.y + (positionRectangle.height * COLLISION_OFFSET_Y);
-    futureRect.width = positionRectangle.width * COLLISION_WIDTH;
-    futureRect.height = positionRectangle.height * COLLISION_HEIGHT;
-    return futureRect;
 }
 
 Direction EntityPosition::CalculateDirection(float angle)
@@ -54,35 +67,46 @@ Vector2 EntityPosition::NormalizeMove(Vector2 &moveDir)
         position.y + moveDir.y * speed};
 }
 
-bool EntityPosition::MoveAndCollision(Vector2 moveDirection, std::vector<Rectangle> collisionRectangles)
+bool EntityPosition::MoveAndCollision(Vector2 moveDirection, std::vector<CollisionLines> collision_lines)
 {
-
-    auto newPosition = NormalizeMove(moveDirection);
-
-    if (Vector2Equals(position, newPosition))
+    Vector2 old_position = position;
+    Vector2 nextPos = NormalizeMove(moveDirection);
+    if (Vector2Equals(position, nextPos))
         return false;
 
-    float angle = CalculateAngle(moveDirection);
+    Vector2 nextPosX = {nextPos.x, position.y};
+    Vector2 nextPosY = {position.x, nextPos.y};
 
-    direction = CalculateDirection(angle);
-    Rectangle futureCollisionRect = GetFutureCollisionRectangle(newPosition);
-
-    for (const auto &rect : collisionRectangles)
+    if (!IsColliding(nextPos, collision_lines))
     {
-        if (CheckCollisionRecs(futureCollisionRect, rect))
-        {
-            return false;
-        }
+        UpdatePosition(nextPos);
+    }
+    else if (!IsColliding(nextPosX, collision_lines))
+    {
+        UpdatePosition(nextPosX);
+    }
+    else if (!IsColliding(nextPosY, collision_lines))
+    {
+        UpdatePosition(nextPosY);
+    }
+    else
+    {
+        return false;
     }
 
-    UpdatePosition(newPosition);
+    if (Vector2Equals(position, old_position))
+    {
+        return false;
+    }
 
+    direction = CalculateDirection(CalculateAngle(moveDirection));
     return true;
 }
 
 void EntityPosition::UpdatePosition(Vector2 newPosition)
 {
     position = newPosition;
+    entity_feet = CalculateEntityFeet(newPosition);
     positionRectangle.x = position.x;
     positionRectangle.y = position.y;
 

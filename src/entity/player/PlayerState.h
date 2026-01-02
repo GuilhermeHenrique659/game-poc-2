@@ -1,8 +1,8 @@
 #pragma once
 
-enum PlayerState
+enum class PlayerState : int
 {
-    IDLE,
-    RUN,
-    ATTACK,
+    Idle,
+    Running,
+    Attacking,
 };

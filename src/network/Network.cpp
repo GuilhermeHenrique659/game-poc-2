@@ -15,6 +15,7 @@ bool Network::InitAsServer(uint16_t port)
         return false;
 
     isServer = true;
+    isConnect = true;
 
     std::cout << "Server criado na porta " << port << std::endl;
     return true;
@@ -42,6 +43,7 @@ bool Network::InitAsClient(const std::string &ip, uint16_t port)
     {
         std::cout << "Conectado ao servidor!" << std::endl;
         isServer = false;
+        isConnect = true;
         return true;
     }
 

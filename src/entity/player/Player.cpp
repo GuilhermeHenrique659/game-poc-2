@@ -1,102 +1,71 @@
 #include "Player.h"
-#include "raymath.h"
-#include "../../common/util/VectorUtil.h"
-#include "../../config.h"
 
-PlayerState Player::GetPlayerState()
+const char *StateToString(PlayerState state)
 {
-    return playerState;
-}
-
-void Player::SetPlayerState(PlayerState state)
-{
-    if (playerState == state)
-        return;
-
-    playerState = state;
-
-    _publish("state_changed", std::any(playerState));
-}
-
-bool Player::IsHitted(Rectangle rect)
-{
-    if (!basicAttack->getAttackbox().has_value())
-        return false;
-
-    return CheckCollisionRecs(basicAttack->getAttackbox().value(), rect);
-}
-
-void Player::OnHit(Rectangle rect)
-{
-
-    if (hitTimer > 0.0f)
+    switch (state)
     {
-        hitTimer -= GetFrameTime();
-        return;
-    }
-
-    if (CheckCollisionRecs(entityPosition->GetCollisionRectangle(), rect))
-    {
-        TraceLog(LOG_INFO, "Hitted");
-        health -= 1;
-        hitTimer = HIT_COOLDOWN; // inicia o cooldown
+    case PlayerState::Idle:
+        return "IDLE";
+    case PlayerState::Running:
+        return "WALKING";
+    case PlayerState::Attacking:
+        return "ATTACKING";
+    default:
+        return "UNKNOWN";
     }
 }
 
-std::optional<Rectangle> Player::GetAttackHitbox()
+void Player::ChangeState(PlayerState new_state)
 {
-    return basicAttack->getAttackbox();
+    if (current_state == new_state)
+        return;
+
+    TraceLog(LOG_INFO, "Player %d changing state from %s to %s", id, StateToString(current_state), StateToString(new_state));
+
+    current_state = new_state;
+
+    _publish("state_change", static_cast<int>(current_state));
+}
+
+PlayerState Player::GetState() const
+{
+    return current_state;
+}
+
+void Player::Move(Vector2 move_direction, std::vector<CollisionLines> collision_lines)
+{
+    if (current_state == PlayerState::Attacking)
+        return;
+
+    if (entityPosition->MoveAndCollision(move_direction, collision_lines))
+    {
+        ChangeState(PlayerState::Running);
+    }
+    else
+    {
+        ChangeState(PlayerState::Idle);
+    }
 }
 
 void Player::Attack()
 {
-    if (IsKeyDown(KEY_SPACE) && playerState != ATTACK)
+    if (current_state != PlayerState::Attacking)
     {
-        SetPlayerState(ATTACK);
-        basicAttack->attack(entityPosition);
-
-        _publish("player_attacked", std::any(basicAttack->getAttackbox()));
+        TraceLog(LOG_INFO, "Player %d attacking", id);
+        entity_attack.attack(entityPosition.get());
+        ChangeState(PlayerState::Attacking);
     }
 
-    if (playerState == ATTACK && basicAttack->attack(entityPosition))
+    if (current_state == PlayerState::Attacking && entity_attack.attack(entityPosition.get()))
     {
-        SetPlayerState(IDLE);
+        TraceLog(LOG_INFO, "Player %d finished attacking", id);
+        ChangeState(PlayerState::Idle);
     }
 }
 
-void Player::move(std::vector<Rectangle> collisionRectangles)
+std::shared_ptr<Player> Player::Create(uint32_t id, Vector2 position, Direction direction)
 {
+    auto player_position = std::make_unique<EntityPosition>(position, direction, Rectangle{position.y, position.y, 320.0f, 320.0f}, Rectangle{}, 6.0f);
 
-    Vector2 moveDir = {0, 0};
-
-    if (IsKeyDown(KEY_UP))
-    {
-        moveDir.x += -1;
-        moveDir.y += -1;
-    }
-    if (IsKeyDown(KEY_DOWN))
-    {
-        moveDir.x += 1;
-        moveDir.y += 1;
-    }
-    if (IsKeyDown(KEY_LEFT))
-    {
-        moveDir.x += -1;
-        moveDir.y += 1;
-    }
-    if (IsKeyDown(KEY_RIGHT))
-    {
-        moveDir.x += 1;
-        moveDir.y += -1;
-    }
-
-    if (entityPosition->MoveAndCollision(moveDir, collisionRectangles))
-    {
-        SetPlayerState(RUN);
-        _publish("moved", std::any(entityPosition->GetPostion()));
-    }
-    else
-    {
-        SetPlayerState(IDLE);
-    }
+    return std::make_shared<Player>(id, "Player", std::move(player_position));
 }

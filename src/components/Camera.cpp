@@ -1,4 +1,5 @@
 #include <raylib.h>
+#include <memory>
 #include <raymath.h>
 #include "../entity/common/EntityPosition.h"
 #include "../config.h"
@@ -10,19 +11,19 @@ private:
 
 public:
     CameraComponent(Camera2D camera) : camera(camera) {};
-    ~CameraComponent();
+    ~CameraComponent() = default;
 
-    static CameraComponent *create(Vector2 position, Rectangle rectangle)
+    static std::unique_ptr<CameraComponent> create(Vector2 position, Rectangle rectangle)
     {
         Camera2D camera2d;
         camera2d.zoom = 1.0f;
         camera2d.rotation = 0.0f;
         camera2d.offset = {(float)GetScreenWidth() / 2.0f, (float)GetScreenHeight() / 2.0f};
         Vector2 cameraTarget = Vector2{
-            rectangle.x + rectangle.width / 2,
-            rectangle.y + rectangle.height - SPRITEH_FRAME_HEIGHT / 4};
+            rectangle.x + rectangle.width / 2.0f,
+            rectangle.y + rectangle.height / 2.0f};
 
-        return new CameraComponent(camera2d);
+        return std::make_unique<CameraComponent>(camera2d);
     }
 
     Camera2D getCamera()

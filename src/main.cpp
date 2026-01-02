@@ -10,7 +10,7 @@
 #include "common/GameState.h"
 #include "common/ui/Hover.h"
 #include "scene/menu/Menu.h"
-#include "scene/world/World.h"
+#include "scene/game/Game.h"
 #include <unordered_map>
 #include "common/ResourceManager.h"
 
@@ -22,20 +22,11 @@ int main()
 {
     const int screenWidth = 1270;
     const int screenHeight = 720;
-    tmx::Map map;
-    if (!map.load("resources/map.tmx"))
-    {
-        return 1;
-    }
 
-    TraceLog(LOG_INFO, "Map version: %d.%d", map.getVersion().upper, map.getVersion().lower);
+    auto network = std::make_shared<Network>();
 
-    TraceLog(LOG_INFO, "Map loaded successfully.");
-
-    Network *network = new Network();
-    EntityManager *entityManager = new EntityManager(network);
-
-    std::unordered_map<std::string, std::unique_ptr<Scene>> scenes;
+    std::unordered_map<std::string, std::unique_ptr<Scene>>
+        scenes;
 
     GameState gameState = {
         .isRunning = true,
@@ -46,6 +37,8 @@ int main()
     SetTargetFPS(60);
 
     ResourceManager &resourceManager = ResourceManager::Get();
+
+    resourceManager.AddMap("resources/map/map.tmx");
 
     // RUN
     resourceManager.RegisterTexture("run_down", "resources/sprites/char/run/Run_Down.png");
@@ -67,7 +60,7 @@ int main()
     resourceManager.RegisterTexture("idle_stand_left", "resources/sprites/char/idle_stand/Idle_Stand_Left.png");
     resourceManager.RegisterTexture("idle_stand_up_left", "resources/sprites/char/idle_stand/Idle_Stand_Up_Left.png");
 
-    // ATTACK
+    // ATTACK 2
     resourceManager.RegisterTexture("attack_down", "resources/sprites/char/attack/Attack_01_Down.png");
     resourceManager.RegisterTexture("attack_up", "resources/sprites/char/attack/Attack_01_Up.png");
     resourceManager.RegisterTexture("attack_left", "resources/sprites/char/attack/Attack_01_Left.png");
@@ -76,11 +69,28 @@ int main()
     resourceManager.RegisterTexture("attack_up_right", "resources/sprites/char/attack/Attack_01_Up_Right.png");
     resourceManager.RegisterTexture("attack_down_left", "resources/sprites/char/attack/Attack_01_Down_Left.png");
     resourceManager.RegisterTexture("attack_down_right", "resources/sprites/char/attack/Attack_01_Down_Right.png");
+    // ATTACK
+    resourceManager.RegisterTexture("attack_down_2", "resources/sprites/char/attack_2/Attack_02_Down.png");
+    resourceManager.RegisterTexture("attack_up_2", "resources/sprites/char/attack_2/Attack_02_Up.png");
+    resourceManager.RegisterTexture("attack_left_2", "resources/sprites/char/attack_2/Attack_02_Left.png");
+    resourceManager.RegisterTexture("attack_right_2", "resources/sprites/char/attack_2/Attack_02_Right.png");
+    resourceManager.RegisterTexture("attack_up_left_2", "resources/sprites/char/attack_2/Attack_02_Up_Left.png");
+    resourceManager.RegisterTexture("attack_up_right_2", "resources/sprites/char/attack_2/Attack_02_Up_Right.png");
+    resourceManager.RegisterTexture("attack_down_left_2", "resources/sprites/char/attack_2/Attack_02_Down_Left.png");
+    resourceManager.RegisterTexture("attack_down_right_2", "resources/sprites/char/attack_2/Attack_02_Down_Right.png");
 
-    resourceManager.RegisterTexture("floor", "resources/sprites/floor.png");
+    resourceManager.RegisterTexture("floor_E", "resources/sprites/env/floor_E.png");
+    resourceManager.RegisterTexture("wall_E", "resources/sprites/env/wall_E.png");
+    resourceManager.RegisterTexture("wall_N", "resources/sprites/env/wall_N.png");
+    resourceManager.RegisterTexture("wall_S", "resources/sprites/env/wall_S.png");
+    resourceManager.RegisterTexture("wall_W", "resources/sprites/env/wall_W.png");
+    resourceManager.RegisterTexture("wallCorner_E", "resources/sprites/env/wallCorner_E.png");
+    resourceManager.RegisterTexture("wallCorner_N", "resources/sprites/env/wallCorner_N.png");
+    resourceManager.RegisterTexture("wallCorner_S", "resources/sprites/env/wallCorner_S.png");
+    resourceManager.RegisterTexture("wallCorner_W", "resources/sprites/env/wallCorner_W.png");
 
     scenes["menu"] = std::make_unique<Menu>(gameState);
-    scenes["world"] = std::make_unique<World>(gameState, entityManager, network);
+    scenes["game"] = std::make_unique<Game>(gameState, network);
 
     std::unique_ptr<Scene> *currentScene = &scenes["menu"];
 
@@ -92,9 +102,9 @@ int main()
     while (!WindowShouldClose())
     {
         network->Update();
-        if (gameState.currentScene == "world")
+        if (gameState.currentScene == "game")
         {
-            currentScene = &scenes["world"];
+            currentScene = &scenes["game"];
         }
 
         currentScene->get()->Update(GetFrameTime());

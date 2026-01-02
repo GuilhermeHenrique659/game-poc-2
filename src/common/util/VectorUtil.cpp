@@ -1,9 +1,12 @@
 #include "VectorUtil.h"
 #include "raymath.h"
 
-Vector2 IsoWorldToScreen(float x, float y)
+Vector2 IsoWorldToScreen(float x, float y, float w, float h)
 {
-    return (Vector2){(x - y) * (256 / 2.0f), (x + y) * (128 / 2.0f)};
+    Vector2 screen;
+    screen.x = (x - y) * (w / 2.0f);
+    screen.y = (x + y) * (h / 2.0f);
+    return screen;
 }
 
 Vector2 ToIso(Vector2 v)
