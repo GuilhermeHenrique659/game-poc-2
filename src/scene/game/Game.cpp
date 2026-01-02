@@ -26,6 +26,20 @@ void Game::Setup()
 
     world_camera = CameraComponent::create(player->GetPosition(), player->GetDestReactangle());
 
+    if (network->isServer && network->isConnect)
+    {
+        network->addListner(EVENT_DEFINITIONS[EventName::CONNECTION].name, std::make_unique<OnConnected>(entity_manager, network, view_manager));
+        network->addListner(EVENT_DEFINITIONS[EventName::REMOTE_INPUT].name, std::make_unique<OnInputReceive>(input_manager));
+    }
+
+    if (!network->isServer && network->isConnect)
+    {
+        network->addListner(EVENT_DEFINITIONS[EventName::ID_ASSIGNEED].name, std::make_unique<OnIdAssigneed>(entity_manager, view_manager, local_player_id));
+        network->addListner(EVENT_DEFINITIONS[EventName::WORLD_SNAPSHOT].name, std::make_unique<OnSnapshotReceive>(entity_manager, view_manager));
+
+        ConnectClient();
+    }
+
     map->Init();
 }
 
@@ -69,49 +83,30 @@ void Game::Update(float delta)
         network->Send(&pkt, sizeof(RemoteInput));
     }
 
-    if (IsKeyPressed(KEY_H))
-    {
-
-        TraceLog(LOG_INFO, "Start as host");
-        network->InitAsServer(); // tecla H = host
-
-        network->addListner(EVENT_DEFINITIONS[EventName::CONNECTION].name, std::make_unique<OnConnected>(entity_manager, network, view_manager));
-        network->addListner(EVENT_DEFINITIONS[EventName::REMOTE_INPUT].name, std::make_unique<OnInputReceive>(input_manager));
-    }
-
-    if (IsKeyPressed(KEY_C))
-    {
-        TraceLog(LOG_INFO, "Try connect");
-        if (network->InitAsClient())
-        {
-            TraceLog(LOG_INFO, "Connect with success");
-        };
-
-        network->addListner(EVENT_DEFINITIONS[EventName::ID_ASSIGNEED].name, std::make_unique<OnIdAssigneed>(entity_manager, view_manager, local_player_id));
-        network->addListner(EVENT_DEFINITIONS[EventName::WORLD_SNAPSHOT].name, std::make_unique<OnSnapshotReceive>(entity_manager, view_manager));
-
-        auto entity = entity_manager->GetEntity(local_player_id);
-
-        if (entity.has_value())
-        {
-            auto player = std::dynamic_pointer_cast<Player>(entity.value());
-
-            RemotePlayerDTO player_dto = {
-                .player_id = local_player_id,
-                .position = player->GetPosition(),
-                .direction = player->GetEntityDirection(),
-                .state = (int)player->GetState(),
-            };
-            RemotePacket pkg = serializePacket(EVENT_DEFINITIONS[EventName::CONNECTION].id, player_dto);
-
-            network->Send(&pkg, sizeof(RemotePlayerDTO));
-        }
-    }
-
     if (entity_manager->GetEntity(local_player_id).has_value())
         world_camera->update(
             entity_manager->GetEntity(local_player_id).value()->GetPosition(),
             entity_manager->GetEntity(local_player_id).value()->GetDestReactangle());
+}
+
+void Game::ConnectClient()
+{
+    auto entity = entity_manager->GetEntity(local_player_id);
+
+    if (entity.has_value())
+    {
+        auto player = std::dynamic_pointer_cast<Player>(entity.value());
+
+        RemotePlayerDTO player_dto = {
+            .player_id = local_player_id,
+            .position = player->GetPosition(),
+            .direction = player->GetEntityDirection(),
+            .state = (int)player->GetState(),
+        };
+        RemotePacket pkg = serializePacket(EVENT_DEFINITIONS[EventName::CONNECTION].id, player_dto);
+
+        network->Send(&pkg, sizeof(RemotePlayerDTO));
+    }
 }
 
 void Game::BroadcastEntitiesSnapshot()

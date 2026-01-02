@@ -35,4 +35,5 @@ public:
     void Setup() override;
     void Presenter(float delta) override;
     void Update(float delta) override;
+    void ConnectClient();
 };

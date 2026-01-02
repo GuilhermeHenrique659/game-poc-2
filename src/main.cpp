@@ -17,6 +17,7 @@
 #include <any>
 #include <cstdio>
 #include <memory>
+#include "main.h"
 
 int main()
 {
@@ -89,22 +90,23 @@ int main()
     resourceManager.RegisterTexture("wallCorner_S", "resources/sprites/env/wallCorner_S.png");
     resourceManager.RegisterTexture("wallCorner_W", "resources/sprites/env/wallCorner_W.png");
 
-    scenes["menu"] = std::make_unique<Menu>(gameState);
+    std::string current_scene_key = "menu";
+
+    scenes["menu"] = std::make_unique<Menu>(gameState, network);
     scenes["game"] = std::make_unique<Game>(gameState, network);
 
-    std::unique_ptr<Scene> *currentScene = &scenes["menu"];
+    std::unique_ptr<Scene> *currentScene = &scenes[current_scene_key];
 
-    for (auto &&scene : scenes)
-    {
-        scene.second->Setup();
-    }
+    currentScene->get()->Setup();
 
     while (!WindowShouldClose())
     {
         network->Update();
-        if (gameState.currentScene == "game")
+        if (IsChangeScene(current_scene_key, gameState))
         {
-            currentScene = &scenes["game"];
+            currentScene = &scenes[gameState.currentScene];
+            currentScene->get()->Setup();
+            current_scene_key = gameState.currentScene;
         }
 
         currentScene->get()->Update(GetFrameTime());
@@ -127,4 +129,8 @@ int main()
     CloseWindow();
 
     return 0;
+}
+bool IsChangeScene(std::string &current_scene_key, GameState &gameState)
+{
+    return current_scene_key != gameState.currentScene;
 }

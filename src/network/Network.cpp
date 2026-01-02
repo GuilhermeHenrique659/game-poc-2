@@ -62,11 +62,7 @@ void Network::Update()
         {
         case ENET_EVENT_TYPE_CONNECT:
         {
-            if (isServer)
-            {
-                if (networkClient)
-                    networkClient->Handle(0, {});
-            }
+
             break;
         }
 
