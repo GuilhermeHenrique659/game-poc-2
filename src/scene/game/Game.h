@@ -13,21 +13,21 @@ class Game : public Scene
 {
 private:
     std::shared_ptr<EntityManager> entity_manager;
-    std::unique_ptr<ViewManager> view_manager;
+    std::shared_ptr<ViewManager> view_manager;
     std::unique_ptr<CameraComponent> world_camera;
-    std::unique_ptr<InputManager> input_manager;
+    std::shared_ptr<InputManager> input_manager;
     std::unique_ptr<GameMap> map;
     std::shared_ptr<Network> network;
 
     uint32_t local_player_id;
 
 public:
-    Game(GameState &gameState) : Scene(gameState),
-                                 map(std::make_unique<GameMap>()),
-                                 input_manager(std::make_unique<InputManager>()),
-                                 entity_manager(std::make_shared<EntityManager>()),
-                                 view_manager(std::make_unique<ViewManager>()),
-                                 network(std::shared_ptr<Network>()) {};
+    Game(GameState &gameState, std::shared_ptr<Network> network) : Scene(gameState),
+                                                                   map(std::make_unique<GameMap>()),
+                                                                   input_manager(std::make_shared<InputManager>()),
+                                                                   entity_manager(std::make_shared<EntityManager>()),
+                                                                   view_manager(std::make_shared<ViewManager>()),
+                                                                   network(network) {};
     ~Game() = default;
 
     void Setup() override;

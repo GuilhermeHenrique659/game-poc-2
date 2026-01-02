@@ -21,7 +21,7 @@ struct PlayerSnapshot
     int state;
 };
 
-struct RemoveInput
+struct RemoteInput
 {
     uint32_t player_id;
     Inputs inputs;
@@ -38,9 +38,10 @@ class OnConnected : public Observer
 private:
     std::shared_ptr<EntityManager> entity_manager;
     std::shared_ptr<Network> network;
+    std::shared_ptr<ViewManager> view_manager;
 
 public:
-    OnConnected(std::shared_ptr<EntityManager> entity_manager, std::shared_ptr<Network> network) : entity_manager(entity_manager), network(network) {};
+    OnConnected(std::shared_ptr<EntityManager> entity_manager, std::shared_ptr<Network> network, std::shared_ptr<ViewManager> view_manager) : entity_manager(entity_manager), network(network), view_manager(view_manager) {};
     ~OnConnected() = default;
 
     void notify(const std::any &data)
@@ -54,15 +55,18 @@ public:
         auto remote_player = std::make_shared<Player>(new_id, "Player", std::move(player_position));
 
         entity_manager->AddEntity(remote_player);
+        view_manager->CreateView(remote_player);
 
         NewIdAssignee snapshot = {
             .player_id = pm.player_id,
             .new_player_id = new_id};
 
-        const size_t dataSize = sizeof(PlayerSnapshot);
+        const size_t dataSize = sizeof(NewIdAssignee);
         RemotePacket pkt;
 
         pkt.eventId = EVENT_DEFINITIONS[EventName::ID_ASSIGNEED].id;
+
+        TraceLog(LOG_INFO, "Player Connected: %d", new_id);
 
         memcpy(&pkt.data, &snapshot, dataSize);
 
@@ -74,10 +78,11 @@ class OnIdAssigneed : public Observer
 {
 private:
     std::shared_ptr<EntityManager> entity_manager;
+    std::shared_ptr<ViewManager> view_manager;
     uint32_t &local_id;
 
 public:
-    OnIdAssigneed(std::shared_ptr<EntityManager> entity_manager, uint32_t &local_id) : entity_manager(entity_manager), local_id(local_id) {};
+    OnIdAssigneed(std::shared_ptr<EntityManager> entity_manager, std::shared_ptr<ViewManager> view_manager, uint32_t &local_id) : entity_manager(entity_manager), view_manager(view_manager), local_id(local_id) {};
     ~OnIdAssigneed() = default;
 
     void notify(const std::any &data)
@@ -86,9 +91,22 @@ public:
         NewIdAssignee pm{};
         memcpy(&pm, pkg.data, sizeof(NewIdAssignee));
 
+        TraceLog(LOG_INFO, "Id Assigneed: %d", pm.new_player_id);
+
+        if (pm.player_id != local_id)
+            return;
+
         auto entity = entity_manager->GetEntity(pm.player_id);
+        if (!entity.has_value())
+            return;
+
         entity.value()->id = pm.new_player_id;
         local_id = pm.new_player_id;
+
+        entity_manager->RemoveEntity(pm.player_id);
+
+        entity_manager->AddEntity(entity.value());
+        view_manager->CreateView(entity.value());
     }
 };
 
@@ -104,8 +122,8 @@ public:
     void notify(const std::any &data)
     {
         RemotePacket pkg = std::any_cast<RemotePacket>(data);
-        RemoveInput pm{};
-        memcpy(&pm, pkg.data, sizeof(RemoveInput));
+        RemoteInput pm{};
+        memcpy(&pm, pkg.data, sizeof(RemoteInput));
 
         input_manager->ReceiveInput(pm.player_id, pm.inputs);
     }
@@ -115,9 +133,10 @@ class OnSnapshotReceive : public Observer
 {
 private:
     std::shared_ptr<EntityManager> entity_manager;
+    std::shared_ptr<ViewManager> view_manager;
 
 public:
-    OnSnapshotReceive(std::shared_ptr<EntityManager> entity_manager) : entity_manager(entity_manager) {};
+    OnSnapshotReceive(std::shared_ptr<EntityManager> entity_manager, std::shared_ptr<ViewManager> view_manager) : entity_manager(entity_manager), view_manager(view_manager) {};
     ~OnSnapshotReceive() = default;
 
     void notify(const std::any &data)
@@ -135,6 +154,14 @@ public:
             player->UpdatePosition(pm.position);
             player->SetDirection(pm.direction);
             player->ChangeState(PlayerState{pm.state});
+        }
+        else
+        {
+            auto player_position = std::make_unique<EntityPosition>(pm.position, Direction::DOWN, Rectangle{pm.position.x, pm.position.y, 320.0f, 320.0f}, Rectangle{}, 6.0f);
+            auto remote_player = std::make_shared<Player>(pm.player_id, "Player", std::move(player_position));
+
+            entity_manager->AddEntity(remote_player);
+            view_manager->CreateView(remote_player);
         }
     }
 };
@@ -199,44 +226,71 @@ void Game::Update(float delta)
         }
     }
 
+    if (network->isConnect)
+    {
+        RemoteInput remote_input = {
+            .player_id = local_player_id,
+            .inputs = local_player_inputs,
+        };
+
+        const size_t dataSize = sizeof(RemoteInput);
+        RemotePacket pkt;
+
+        pkt.eventId = EVENT_DEFINITIONS[EventName::PLAYER_MOVED].id;
+
+        memcpy(&pkt.data, &remote_input, dataSize);
+
+        network->Send(&pkt, dataSize);
+    }
+
     if (IsKeyPressed(KEY_H))
     {
 
         TraceLog(LOG_INFO, "Start as host");
         network->InitAsServer(); // tecla H = host
 
-        network->addListner("connection", std::make_unique<OnConnected>(entity_manager, network));
+        network->addListner("connection", std::make_unique<OnConnected>(entity_manager, network, view_manager));
+        network->addListner("player_moved", std::make_unique<OnInputReceive>(input_manager));
     }
+
     if (IsKeyPressed(KEY_C))
     {
         TraceLog(LOG_INFO, "Try connect");
-        network->InitAsClient(); // tecla C = conectar em 127.0.0.1
+        if (network->InitAsClient())
+        {
+            TraceLog(LOG_INFO, "Connect with success");
+        };
 
-        network->addListner("id_assign", std::make_unique<OnIdAssigneed>(entity_manager, local_player_id));
-        network->addListner("world_snapshot", std::make_unique<OnSnapshotReceive>(entity_manager));
+        network->addListner("id_assign", std::make_unique<OnIdAssigneed>(entity_manager, view_manager, local_player_id));
+        network->addListner("world_snapshot", std::make_unique<OnSnapshotReceive>(entity_manager, view_manager));
 
         auto entity = entity_manager->GetEntity(local_player_id);
-        auto player = std::dynamic_pointer_cast<Player>(entity.value());
 
-        PlayerSnapshot snapshot = {
-            .player_id = local_player_id,
-            .position = player->GetPosition(),
-            .direction = player->GetEntityDirection(),
-            .state = (int)player->GetState(),
-        };
-        const size_t dataSize = sizeof(PlayerSnapshot);
-        RemotePacket pkt;
+        if (entity.has_value())
+        {
+            auto player = std::dynamic_pointer_cast<Player>(entity.value());
 
-        pkt.eventId = EVENT_DEFINITIONS[EventName::CONNECTION].id;
+            PlayerSnapshot snapshot = {
+                .player_id = local_player_id,
+                .position = player->GetPosition(),
+                .direction = player->GetEntityDirection(),
+                .state = (int)player->GetState(),
+            };
+            const size_t dataSize = sizeof(PlayerSnapshot);
+            RemotePacket pkt;
 
-        memcpy(&pkt.data, &snapshot, dataSize);
+            pkt.eventId = EVENT_DEFINITIONS[EventName::CONNECTION].id;
 
-        network->Send(&pkt, dataSize);
+            memcpy(&pkt.data, &snapshot, dataSize);
+
+            network->Send(&pkt, dataSize);
+        }
     }
 
-    world_camera->update(
-        entity_manager->GetEntity(local_player_id).value()->GetPosition(),
-        entity_manager->GetEntity(local_player_id).value()->GetDestReactangle());
+    if (entity_manager->GetEntity(local_player_id).has_value())
+        world_camera->update(
+            entity_manager->GetEntity(local_player_id).value()->GetPosition(),
+            entity_manager->GetEntity(local_player_id).value()->GetDestReactangle());
 }
 
 void Game::Presenter(float delta)
@@ -309,4 +363,6 @@ void Game::Presenter(float delta)
     }
 
     EndMode2D();
+
+    DrawText(TextFormat("ID: %d, is %s", local_player_id, network->isServer ? "host" : "client"), 100, 10, 20, BLUE);
 }

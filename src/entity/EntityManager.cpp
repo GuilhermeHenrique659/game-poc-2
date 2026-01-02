@@ -14,10 +14,9 @@ std::unordered_map<std::uint32_t, std::shared_ptr<Entity>> &EntityManager::GetEn
 
 void EntityManager::AddEntity(std::shared_ptr<Entity> entity)
 {
-    if (entity)
-    {
-        entities[entity->id] = entity;
-    }
+    TraceLog(LOG_INFO, "Add entity id(%d)", entity->id);
+    entities[entity->id] = entity;
+    TraceLog(LOG_INFO, "Number of entities %d", entities.size());
 }
 
 void EntityManager::RemoveEntity(uint32_t entityId)

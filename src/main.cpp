@@ -23,9 +23,10 @@ int main()
     const int screenWidth = 1270;
     const int screenHeight = 720;
 
-    Network *network = new Network();
+    auto network = std::make_shared<Network>();
 
-    std::unordered_map<std::string, std::unique_ptr<Scene>> scenes;
+    std::unordered_map<std::string, std::unique_ptr<Scene>>
+        scenes;
 
     GameState gameState = {
         .isRunning = true,
@@ -89,7 +90,7 @@ int main()
     resourceManager.RegisterTexture("wallCorner_W", "resources/sprites/env/wallCorner_W.png");
 
     scenes["menu"] = std::make_unique<Menu>(gameState);
-    scenes["game"] = std::make_unique<Game>(gameState);
+    scenes["game"] = std::make_unique<Game>(gameState, network);
 
     std::unique_ptr<Scene> *currentScene = &scenes["menu"];
 

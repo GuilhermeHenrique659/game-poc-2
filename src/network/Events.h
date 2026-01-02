@@ -8,7 +8,6 @@ enum EventName
     CONNECTION,
     PLAYER_MOVED,
     ID_ASSIGNEED,
-    HITTED,
     WORLD_SNAPSHOT,
 };
 

@@ -106,6 +106,7 @@ bool EntityPosition::MoveAndCollision(Vector2 moveDirection, std::vector<Collisi
 void EntityPosition::UpdatePosition(Vector2 newPosition)
 {
     position = newPosition;
+    entity_feet = CalculateEntityFeet(newPosition);
     positionRectangle.x = position.x;
     positionRectangle.y = position.y;
 
