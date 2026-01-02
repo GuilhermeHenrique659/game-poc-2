@@ -21,6 +21,8 @@ private:
 
     uint32_t local_player_id;
 
+    void BroadcastEntitiesSnapshot();
+
 public:
     Game(GameState &gameState, std::shared_ptr<Network> network) : Scene(gameState),
                                                                    map(std::make_unique<GameMap>()),

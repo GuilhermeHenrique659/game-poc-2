@@ -62,3 +62,10 @@ void Player::Attack()
         ChangeState(PlayerState::Idle);
     }
 }
+
+std::shared_ptr<Player> Player::Create(uint32_t id, Vector2 position, Direction direction)
+{
+    auto player_position = std::make_unique<EntityPosition>(position, direction, Rectangle{position.y, position.y, 320.0f, 320.0f}, Rectangle{}, 6.0f);
+
+    return std::make_shared<Player>(id, "Player", std::move(player_position));
+}

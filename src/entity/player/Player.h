@@ -1,4 +1,6 @@
 #pragma once
+#include <memory>
+
 #include "PlayerState.h"
 
 #include "../common/Entity.h"
@@ -28,5 +30,6 @@ public:
     void Move(Vector2 move_direction, std::vector<CollisionLines> collision_lines);
     void Attack();
 
+    static std::shared_ptr<Player> Create(uint32_t id, Vector2 position, Direction direction);
     PlayerState GetState() const;
 };
