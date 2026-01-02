@@ -64,6 +64,27 @@ static SpriteCollection CreateAttackingCollection()
     return attacking_collection;
 }
 
+static SpriteCollection CreateAttacking2Collection()
+{
+    int frame_count = 16;
+    int columns = 4;
+    int rows = 4;
+    float frame_time = 0.08f;
+
+    SpriteCollection attacking_collection = SpriteCollection();
+
+    attacking_collection.AddSprite(Direction::DOWN, SpriteSheet{"attack_down_2", 320, 320, frame_count, columns, rows, frame_time});
+    attacking_collection.AddSprite(Direction::RIGHT_DOWN, SpriteSheet{"attack_down_right_2", 320, 320, frame_count, columns, rows, frame_time});
+    attacking_collection.AddSprite(Direction::RIGHT, SpriteSheet{"attack_right_2", 320, 320, frame_count, columns, rows, frame_time});
+    attacking_collection.AddSprite(Direction::RIGHT_UP, SpriteSheet{"attack_up_right_2", 320, 320, frame_count, columns, rows, frame_time});
+    attacking_collection.AddSprite(Direction::UP, SpriteSheet{"attack_up_2", 320, 320, frame_count, columns, rows, frame_time});
+    attacking_collection.AddSprite(Direction::LEFT_UP, SpriteSheet{"attack_up_left_2", 320, 320, frame_count, columns, rows, frame_time});
+    attacking_collection.AddSprite(Direction::LEFT, SpriteSheet{"attack_left_2", 320, 320, frame_count, columns, rows, frame_time});
+    attacking_collection.AddSprite(Direction::LEFT_DOWN, SpriteSheet{"attack_down_left_2", 320, 320, frame_count, columns, rows, frame_time});
+
+    return attacking_collection;
+}
+
 const std::unordered_map<PlayerState, SpriteCollection> PlayerView::player_collection = {
     {PlayerState::Idle, CreateIdleCollection()},
     {PlayerState::Running, CreateRunningCollection()},

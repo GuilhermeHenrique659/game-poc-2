@@ -59,7 +59,7 @@ int main()
     resourceManager.RegisterTexture("idle_stand_left", "resources/sprites/char/idle_stand/Idle_Stand_Left.png");
     resourceManager.RegisterTexture("idle_stand_up_left", "resources/sprites/char/idle_stand/Idle_Stand_Up_Left.png");
 
-    // ATTACK
+    // ATTACK 2
     resourceManager.RegisterTexture("attack_down", "resources/sprites/char/attack/Attack_01_Down.png");
     resourceManager.RegisterTexture("attack_up", "resources/sprites/char/attack/Attack_01_Up.png");
     resourceManager.RegisterTexture("attack_left", "resources/sprites/char/attack/Attack_01_Left.png");
@@ -68,6 +68,15 @@ int main()
     resourceManager.RegisterTexture("attack_up_right", "resources/sprites/char/attack/Attack_01_Up_Right.png");
     resourceManager.RegisterTexture("attack_down_left", "resources/sprites/char/attack/Attack_01_Down_Left.png");
     resourceManager.RegisterTexture("attack_down_right", "resources/sprites/char/attack/Attack_01_Down_Right.png");
+    // ATTACK
+    resourceManager.RegisterTexture("attack_down_2", "resources/sprites/char/attack_2/Attack_02_Down.png");
+    resourceManager.RegisterTexture("attack_up_2", "resources/sprites/char/attack_2/Attack_02_Up.png");
+    resourceManager.RegisterTexture("attack_left_2", "resources/sprites/char/attack_2/Attack_02_Left.png");
+    resourceManager.RegisterTexture("attack_right_2", "resources/sprites/char/attack_2/Attack_02_Right.png");
+    resourceManager.RegisterTexture("attack_up_left_2", "resources/sprites/char/attack_2/Attack_02_Up_Left.png");
+    resourceManager.RegisterTexture("attack_up_right_2", "resources/sprites/char/attack_2/Attack_02_Up_Right.png");
+    resourceManager.RegisterTexture("attack_down_left_2", "resources/sprites/char/attack_2/Attack_02_Down_Left.png");
+    resourceManager.RegisterTexture("attack_down_right_2", "resources/sprites/char/attack_2/Attack_02_Down_Right.png");
 
     resourceManager.RegisterTexture("floor_E", "resources/sprites/env/floor_E.png");
     resourceManager.RegisterTexture("wall_E", "resources/sprites/env/wall_E.png");

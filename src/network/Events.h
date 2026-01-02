@@ -22,6 +22,5 @@ static const EventDefinition EVENT_DEFINITIONS[] = {
     {0, "connection"},
     {1, "player_moved"},
     {2, "id_assign"},
-    {3, "hitted"},
     {3, "world_snapshot"},
 };

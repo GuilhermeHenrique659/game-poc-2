@@ -15,6 +15,7 @@ private:
 
 public:
     bool isServer = false;
+    bool isConnect = false;
     ENetHost *host = nullptr;
     ENetAddress address;
     ENetEvent event;

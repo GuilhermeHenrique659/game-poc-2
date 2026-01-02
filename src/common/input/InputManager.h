@@ -15,6 +15,6 @@ public:
 
     void ReceiveInput(uint32_t player_id, Inputs input);
     Inputs CaptureInput(uint32_t player_id);
-    std::unordered_map<uint32_t, Inputs> GetInputs(uint32_t player_id);
+    std::unordered_map<uint32_t, Inputs> GetInputs();
     void ClearInputs();
 };

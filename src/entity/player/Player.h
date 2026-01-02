@@ -11,6 +11,7 @@ class Player : public Entity
 private:
     PlayerState current_state;
     EntityAttack entity_attack;
+    int attack_count = 0;
 
 public:
     Player(uint32_t id, std::string label, std::unique_ptr<EntityPosition> entityPosition) : Entity(label, id, std::move(entityPosition)),

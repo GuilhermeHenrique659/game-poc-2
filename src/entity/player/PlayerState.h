@@ -1,6 +1,6 @@
 #pragma once
 
-enum class PlayerState
+enum class PlayerState : int
 {
     Idle,
     Running,

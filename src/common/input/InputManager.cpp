@@ -16,10 +16,12 @@ Inputs InputManager::CaptureInput(uint32_t player_id)
 
     input_states.attack = IsKeyDown(KEY_SPACE);
 
+    all_inputs[player_id] = input_states;
+
     return input_states;
 }
 
-std::unordered_map<uint32_t, Inputs> InputManager::GetInputs(uint32_t player_id)
+std::unordered_map<uint32_t, Inputs> InputManager::GetInputs()
 {
     return all_inputs;
 }
