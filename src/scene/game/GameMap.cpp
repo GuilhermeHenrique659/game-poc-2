@@ -122,7 +122,7 @@ void GameMap::Init()
                     Rectangle dest_rectangle = {drawX, drawY, (float)texture.width, (float)texture.height};
                     auto sprite = Sprite{
                         texture,
-                        {drawX, drawY + dest_rectangle.height * 0.9f},
+                        {drawX, drawY + dest_rectangle.height * 0.8f},
                         sourceRect,
                         dest_rectangle,
                         "Static"};

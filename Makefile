@@ -3,7 +3,7 @@ CXXFLAGS = -std=c++20 -g -O0 -Wall -Iinclude
 LDFLAGS  = -Llib
 
 # Windows (MinGW)
-LDLIBS   = -lraylib  -lopengl32 -lgdi32 -lwinmm -lenet -ltmxlite -lws2_32 
+LDLIBS   = -lraylib  -lopengl32 -lgdi32 -lwinmm lib\libenet.dll.a -ltmxlite -lws2_32 -static -static-libgcc -static-libstdc++
 
 # Linux → descomente a linha abaixo e comente a de cima
 # LDLIBS   = -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
@@ -24,9 +24,9 @@ $(EXE): $(OBJ)
 	@echo "Para depurar: gdb ./$(EXE)"
 
 $(OBJ_DIR)/%.o: src/%.cpp
-	@mkdir -p $(dir $@)
+	@if not exist "$(dir $@)" mkdir "$(subst /,\,$(dir $@))"
 	$(CXX) $(CXXFLAGS) -c $< -o $@
-
+	
 clean:
 	rm -rf $(OBJ_DIR) $(EXE) *.exe
 

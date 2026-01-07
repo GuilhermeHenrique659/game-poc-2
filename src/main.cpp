@@ -46,8 +46,8 @@ int main()
     resourceManager.RegisterTexture("run_up", "resources/sprites/char/run/Run_Up.png");
     resourceManager.RegisterTexture("run_left", "resources/sprites/char/run/Run_Left.png");
     resourceManager.RegisterTexture("run_right", "resources/sprites/char/run/Run_Right.png");
-    resourceManager.RegisterTexture("run_up_left", "resources/sprites/char/run/Run_Left_Up.png");
-    resourceManager.RegisterTexture("run_up_right", "resources/sprites/char/run/Run_Right_Up.png");
+    resourceManager.RegisterTexture("run_up_left", "resources/sprites/char/run/Run_Up_Left.png");
+    resourceManager.RegisterTexture("run_up_right", "resources/sprites/char/run/Run_Up_Right.png");
     resourceManager.RegisterTexture("run_down_left", "resources/sprites/char/run/Run_Down_Left.png");
     resourceManager.RegisterTexture("run_down_right", "resources/sprites/char/run/Run_Down_Right.png");
 
@@ -80,15 +80,9 @@ int main()
     resourceManager.RegisterTexture("attack_down_left_2", "resources/sprites/char/attack_2/Attack_02_Down_Left.png");
     resourceManager.RegisterTexture("attack_down_right_2", "resources/sprites/char/attack_2/Attack_02_Down_Right.png");
 
-    resourceManager.RegisterTexture("floor_E", "resources/sprites/env/floor_E.png");
-    resourceManager.RegisterTexture("wall_E", "resources/sprites/env/wall_E.png");
-    resourceManager.RegisterTexture("wall_N", "resources/sprites/env/wall_N.png");
-    resourceManager.RegisterTexture("wall_S", "resources/sprites/env/wall_S.png");
-    resourceManager.RegisterTexture("wall_W", "resources/sprites/env/wall_W.png");
-    resourceManager.RegisterTexture("wallCorner_E", "resources/sprites/env/wallCorner_E.png");
-    resourceManager.RegisterTexture("wallCorner_N", "resources/sprites/env/wallCorner_N.png");
-    resourceManager.RegisterTexture("wallCorner_S", "resources/sprites/env/wallCorner_S.png");
-    resourceManager.RegisterTexture("wallCorner_W", "resources/sprites/env/wallCorner_W.png");
+    resourceManager.RegisterTexture("dirt", "resources/sprites/env/dirt_E.png");
+    resourceManager.RegisterTexture("stoneWall_E", "resources/sprites/env/stoneWall_E.png");
+    resourceManager.RegisterTexture("stone", "resources/sprites/env/stone_E.png");
 
     std::string current_scene_key = "menu";
 
