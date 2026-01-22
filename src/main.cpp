@@ -61,7 +61,7 @@ int main()
     resourceManager.RegisterTexture("idle_stand_left", "resources/sprites/char/idle_stand/Idle_Stand_Left.png");
     resourceManager.RegisterTexture("idle_stand_up_left", "resources/sprites/char/idle_stand/Idle_Stand_Up_Left.png");
 
-    // ATTACK 2
+    // ATTACK
     resourceManager.RegisterTexture("attack_down", "resources/sprites/char/attack/Attack_01_Down.png");
     resourceManager.RegisterTexture("attack_up", "resources/sprites/char/attack/Attack_01_Up.png");
     resourceManager.RegisterTexture("attack_left", "resources/sprites/char/attack/Attack_01_Left.png");
