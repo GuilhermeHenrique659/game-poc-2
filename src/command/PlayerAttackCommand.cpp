@@ -16,6 +16,8 @@ void PlayerAttackCommand::Execute(uint32_t player_id, const Inputs &input)
         return;
     }
 
+    player->RestoreActionPoints();
+
     if (input.attack || player->GetState() == PlayerState::Attacking)
-        player->Attack();
+        player->Attack(std::make_unique<EntityAttack>(32.0f, 32.0f, 32.0f, 2, 1.28f));
 }

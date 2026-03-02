@@ -67,6 +67,8 @@ void OnSnapshotReceive::notify(const std::any &data)
         player->UpdatePosition(remote_player_data.position);
         player->SetDirection(remote_player_data.direction);
         player->ChangeState(PlayerState{remote_player_data.state});
+        player->SetHealth(remote_player_data.health);
+        player->SetActionPoints(remote_player_data.points);
     }
     else
     {

@@ -6,6 +6,7 @@
 #include <tmxlite/TileLayer.hpp>
 #include <tmxlite/ObjectGroup.hpp>
 #include <algorithm>
+#include "rlgl.h"
 
 #include "../../network/Events.h"
 #include "../../network/PacketSerialization.hpp"
@@ -15,6 +16,11 @@
 #include "../../command/PlayerMoveCommand.h"
 #include "../../command/PlayerAttackCommand.h"
 #include "../../common/ResourceManager.h"
+#define RLGL_SRC_ALPHA  0x0302
+#define RLGL_MIN        0x8007
+#define RLGL_MAX        0x8008
+
+
 
 void Game::Setup()
 {
@@ -119,6 +125,8 @@ void Game::BroadcastEntitiesSnapshot()
             .player_id = entity_id,
             .position = player->GetPosition(),
             .direction = player->GetEntityDirection(),
+            .points = player->GetActionPoints().points,
+            .health = player->GetHealth().current_health,
             .state = (int)player->GetState(),
         };
 
@@ -130,6 +138,11 @@ void Game::BroadcastEntitiesSnapshot()
 
 void Game::Presenter(float delta)
 {
+    auto player = std::dynamic_pointer_cast<Player>(entity_manager->GetEntity(local_player_id).value());
+
+    UpdateLighting(delta, player);
+
+    ClearBackground(BLACK);
     BeginMode2D(world_camera->getCamera());
 
     map->Draw("ground");
@@ -199,5 +212,54 @@ void Game::Presenter(float delta)
 
     EndMode2D();
 
+    DrawTextureRec(global_litght_texture.texture,
+                   (Rectangle){0, 0, (float)global_litght_texture.texture.width, -(float)global_litght_texture.texture.height},
+                   Vector2Zero(), WHITE);
+
     DrawText(TextFormat("ID: %d, is %s", local_player_id, network->isServer ? "host" : "client"), 100, 10, 20, BLUE);
+
+    for (auto &[entity_id, entity] : entity_manager->GetEntities())
+    {
+        auto player = std::dynamic_pointer_cast<Player>(entity);
+        if (player)
+        {
+            DrawText(
+                TextFormat("Player %d - HP: %d, AP: %d, State: %d", entity_id, player->GetHealth().current_health, player->GetActionPoints().points, (int)player->GetState()),
+                10,
+                30 + 20 * entity_id,
+                20,
+                BLUE);
+        }
+    }
+}
+
+void Game::UpdateLighting(float delta, std::shared_ptr<Entity> player)
+{
+    BeginTextureMode(global_litght_texture);
+    ClearBackground(Color{40, 40, 40, 200});
+    BeginMode2D(world_camera->getCamera());
+
+    rlSetBlendFactors(RLGL_SRC_ALPHA, RLGL_SRC_ALPHA, RLGL_MIN);
+    rlSetBlendMode(BLEND_CUSTOM);
+
+    // 2. Dentro do seu Presenter ou Update:
+    light_flicker_timer += delta;
+
+    if (light_flicker_timer >= 0.1f)
+    { // Muda a intensidade a cada 0.1 segundos
+        // Gera um valor entre 0.85 e 1.0 para não apagar totalmente
+        light_flicker_interval = (float)GetRandomValue(85, 100) / 100.0f;
+        light_flicker_timer = 0.0f;
+    }
+    // 3. Aplique no desenho da luz:
+    float radius = 400.0f * light_flicker_interval;                // O raio oscila
+    Color light_color = ColorAlpha(WHITE, light_flicker_interval); // A intensidade também oscila
+
+    DrawCircleGradient(player->GetEntityFeet().x, player->GetEntityFeet().y, radius, ColorAlpha(WHITE, 0), light_color);
+    DrawCircleGradient(player->GetEntityFeet().x, player->GetEntityFeet().y, radius * 3.0f, ColorAlpha(Color{230, 230, 230, 255}, 0), light_color);
+    rlDrawRenderBatchActive();
+
+    rlSetBlendMode(BLEND_ALPHA);
+    EndMode2D();
+    EndTextureMode();
 }

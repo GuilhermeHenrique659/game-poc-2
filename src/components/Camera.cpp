@@ -38,11 +38,12 @@ public:
             rectangle.y + rectangle.height - SPRITEH_FRAME_HEIGHT / 4};
         camera.target = Vector2Lerp(camera.target, cameraTarget, 5.0f * GetFrameTime());
 
-        camera.zoom = expf(logf(camera.zoom) + ((float)GetMouseWheelMove() * 0.1f));
+        //DISABLE ZOOM
+/*         camera.zoom = expf(logf(camera.zoom) + ((float)GetMouseWheelMove() * 0.1f));
 
         if (camera.zoom > 3.0f)
             camera.zoom = 3.0f;
         else if (camera.zoom < 0.1f)
-            camera.zoom = 0.1f;
+            camera.zoom = 0.1f; */
     }
 };

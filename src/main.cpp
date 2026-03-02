@@ -70,7 +70,7 @@ int main()
     resourceManager.RegisterTexture("attack_up_right", "resources/sprites/char/attack/Attack_01_Up_Right.png");
     resourceManager.RegisterTexture("attack_down_left", "resources/sprites/char/attack/Attack_01_Down_Left.png");
     resourceManager.RegisterTexture("attack_down_right", "resources/sprites/char/attack/Attack_01_Down_Right.png");
-    // ATTACK
+    // ATTACK 2
     resourceManager.RegisterTexture("attack_down_2", "resources/sprites/char/attack_2/Attack_02_Down.png");
     resourceManager.RegisterTexture("attack_up_2", "resources/sprites/char/attack_2/Attack_02_Up.png");
     resourceManager.RegisterTexture("attack_left_2", "resources/sprites/char/attack_2/Attack_02_Left.png");

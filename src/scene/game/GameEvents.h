@@ -11,6 +11,8 @@ struct RemotePlayerDTO
     uint32_t player_id;
     Vector2 position;
     Direction direction;
+    int points;
+    int health;
     int state;
 };
 
