@@ -14,7 +14,8 @@ Inputs InputManager::CaptureInput(uint32_t player_id)
     input_states.move_left = IsKeyDown(KEY_LEFT);
     input_states.move_right = IsKeyDown(KEY_RIGHT);
 
-    input_states.attack = IsKeyDown(KEY_SPACE);
+    input_states.attack_basic = IsKeyDown(KEY_SPACE);
+    input_states.attack_2 = IsKeyDown(KEY_E);
 
     all_inputs[player_id] = input_states;
 

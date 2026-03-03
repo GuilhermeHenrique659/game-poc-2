@@ -7,5 +7,6 @@ struct Inputs
     bool move_down;
     bool move_left;
     bool move_right;
-    bool attack;
+    bool attack_basic;
+    bool attack_2;
 };

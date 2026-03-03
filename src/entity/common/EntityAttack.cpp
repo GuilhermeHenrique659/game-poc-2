@@ -46,6 +46,16 @@ void EntityAttack::createAttackbox(EntityPosition *entityPosition)
     }
 }
 
+const std::string& EntityAttack::GetAttackName() const
+{
+    return attack_name;
+}
+
+const std::string& EntityAttack::GetAttackType() const
+{
+    return attack_type;
+}
+
 bool EntityAttack::attack(EntityPosition *entityPosition)
 {
     if (attackTimer < attackDuration && attackTimer > 0)

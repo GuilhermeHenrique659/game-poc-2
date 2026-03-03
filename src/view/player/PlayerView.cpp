@@ -97,6 +97,19 @@ void PlayerView::Draw(std::shared_ptr<Entity> entity, std::shared_ptr<SpriteAnim
     if (!player)
         return;
 
+    if (player->GetState() == PlayerState::Attacking && player->GetCurrentAttackName().has_value()) {
+        //TODO: REFACTOR HERE
+        if (player->GetCurrentAttackName().value() == "Basic Attack") {
+            static SpriteCollection attacking_collection = CreateAttackingCollection();
+            animation->Animate(attacking_collection, entity->GetEntityDirection());
+            return;
+        } else if (player->GetCurrentAttackName().value() == "Basic Attack 2") {
+            static SpriteCollection attacking2_collection = CreateAttacking2Collection();
+            animation->Animate(attacking2_collection, entity->GetEntityDirection());
+            return;
+        }
+    }
+
     auto collection = player_collection.at(player->GetState());
 
     animation->Animate(collection, entity->GetEntityDirection());

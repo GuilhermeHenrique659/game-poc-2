@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <string.h>
 #include <optional>
 #include "PlayerState.h"
 
@@ -27,7 +28,7 @@ class Player : public Entity
 {
 private:
     PlayerState current_state;
-    std::optional<std::unique_ptr<EntityAttack>> current_attack;
+    std::unique_ptr<EntityAttack> current_attack;
     int attack_count = 0;
     Health health = {10, 10};
     ActionPoints action_points = {6, 6, 0.0f};
@@ -35,7 +36,7 @@ private:
 public:
     Player(uint32_t id, std::string label, std::unique_ptr<EntityPosition> entityPosition) : Entity(label, id, std::move(entityPosition)),
                                                                                              current_state(PlayerState::Idle),
-                                                                                             current_attack(std::nullopt) {};
+                                                                                             current_attack(nullptr) {};
     ~Player() = default;
 
     void SetHealth(int health_points);
@@ -51,4 +52,6 @@ public:
     PlayerState GetState() const;
     const Health& GetHealth() const;
     const ActionPoints& GetActionPoints() const;
+
+    const std::optional<std::string> GetCurrentAttackName() const;
 };

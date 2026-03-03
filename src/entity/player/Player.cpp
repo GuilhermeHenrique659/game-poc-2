@@ -73,21 +73,21 @@ void Player::Move(Vector2 move_direction, std::vector<CollisionLines> collision_
 
 void Player::Attack(std::unique_ptr<EntityAttack> attack)
 {
-    if (!current_attack.has_value()) {
+    if (!current_attack) {
         current_attack = std::move(attack);
     }
 
     if (current_state != PlayerState::Attacking)
     {
-        if (action_points.points < current_attack.value()->GetAttackPointsConsume()) return;
+        if (action_points.points < current_attack->GetAttackPointsConsume()) return;
         TraceLog(LOG_INFO, "Player %d attacking", id);
-        current_attack.value()->attack(entityPosition.get());
+        current_attack->attack(entityPosition.get());
         ChangeState(PlayerState::Attacking);
 
-        action_points.points-=current_attack.value()->GetAttackPointsConsume();
+        action_points.points-=current_attack->GetAttackPointsConsume();
     }
 
-    if (current_state == PlayerState::Attacking && current_attack.value()->attack(entityPosition.get()))
+    if (current_state == PlayerState::Attacking && current_attack->attack(entityPosition.get()))
     {
         TraceLog(LOG_INFO, "Player %d finished attacking", id);
         ChangeState(PlayerState::Idle);
@@ -110,4 +110,13 @@ const Health& Player::GetHealth() const
 const ActionPoints& Player::GetActionPoints() const
 {
     return action_points;
+}
+
+const std::optional<std::string> Player::GetCurrentAttackName() const
+{
+    if (current_attack) {
+        return current_attack->GetAttackName();
+    }
+    
+    return std::nullopt;
 }
