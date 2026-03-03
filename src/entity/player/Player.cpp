@@ -91,7 +91,7 @@ void Player::Attack(std::unique_ptr<EntityAttack> attack)
     {
         TraceLog(LOG_INFO, "Player %d finished attacking", id);
         ChangeState(PlayerState::Idle);
-        current_attack.reset();
+        current_attack = nullptr;
     }
 }
 

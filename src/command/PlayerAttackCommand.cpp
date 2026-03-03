@@ -16,15 +16,16 @@ void PlayerAttackCommand::Execute(uint32_t player_id, const Inputs &input)
         return;
     }
 
-    player->RestoreActionPoints();
-    //TODO: REFACTOR HERE
-
-    if (input.attack_basic || input.attack_2 || player->GetState() == PlayerState::Attacking){
-        std::string attack_name = "Basic Attack";
-        if (input.attack_2) {
-            attack_name = "Basic Attack 2";
-        }
-
-        player->Attack(std::make_unique<EntityAttack>(attack_name, "Melee", 32.0f, 32.0f, 32.0f, 2, 1.28f));
+    if (player->GetState() == PlayerState::Attacking) {
+        player->Attack(nullptr);
+        return;
     }
+
+    if (input.attack_basic){
+        player->Attack(std::make_unique<EntityAttack>("Basic Attack", "Melee", 32.0f, 32.0f, 32.0f, 2, 1.28f));
+    } else if (input.attack_2) {
+        player->Attack(std::make_unique<EntityAttack>("Basic Attack 2", "Melee", 48.0f, 48.0f, 48.0f, 3, 1.92f));
+    }
+
+    player->RestoreActionPoints();
 }
