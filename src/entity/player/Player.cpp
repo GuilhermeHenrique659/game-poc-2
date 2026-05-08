@@ -120,3 +120,8 @@ const std::optional<std::string> Player::GetCurrentAttackName() const
     
     return std::nullopt;
 }
+
+void Player::SetCurrentAttack(std::unique_ptr<EntityAttack> attack)
+{
+    current_attack = std::move(attack);
+}

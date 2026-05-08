@@ -14,6 +14,7 @@ struct RemotePlayerDTO
     int points;
     int health;
     int state;
+    char attack_name[32]; // For simplicity, we'll use a fixed-size char array for attack name
 };
 
 struct RemoteInput

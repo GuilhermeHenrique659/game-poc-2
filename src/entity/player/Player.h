@@ -45,6 +45,7 @@ public:
     void ChangeState(PlayerState new_state);
     void Move(Vector2 move_direction, std::vector<CollisionLines> collision_lines);
     void Attack(std::unique_ptr<EntityAttack> attack);
+    void SetCurrentAttack(std::unique_ptr<EntityAttack> attack);
 
     void RestoreActionPoints();
 

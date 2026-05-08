@@ -69,6 +69,17 @@ void OnSnapshotReceive::notify(const std::any &data)
         player->ChangeState(PlayerState{remote_player_data.state});
         player->SetHealth(remote_player_data.health);
         player->SetActionPoints(remote_player_data.points);
+        
+        // Handle attack information
+        if (remote_player_data.attack_name[0] != '\0') {
+            // If the remote player is attacking, we update the player's state to attacking
+            // Note: The actual attack execution is handled by the remote player's game instance
+            // We're just updating the visual state here
+            if (player->GetState() != PlayerState::Attacking) {
+                // Create EntityAttack with default values since we only have the attack name from the remote player
+                player->SetCurrentAttack(std::make_unique<EntityAttack>(std::string(remote_player_data.attack_name), "Melee", 32.0f, 32.0f, 32.0f, 0, 1.28f));
+            }
+        } 
     }
     else
     {

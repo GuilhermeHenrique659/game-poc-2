@@ -107,7 +107,10 @@ void Game::ConnectClient()
             .player_id = local_player_id,
             .position = player->GetPosition(),
             .direction = player->GetEntityDirection(),
+            .points = player->GetActionPoints().points,
+            .health = player->GetHealth().current_health,
             .state = (int)player->GetState(),
+            .attack_name = {'\0'}, // Initialize as empty string
         };
         RemotePacket pkg = serializePacket(EVENT_DEFINITIONS[EventName::CONNECTION].id, player_dto);
 
@@ -129,6 +132,15 @@ void Game::BroadcastEntitiesSnapshot()
             .health = player->GetHealth().current_health,
             .state = (int)player->GetState(),
         };
+
+        // Include attack name if player is attacking
+        auto attack_name = player->GetCurrentAttackName();
+        if (attack_name.has_value()) {
+            strncpy(player_dto.attack_name, attack_name.value().c_str(), sizeof(player_dto.attack_name) - 1);
+            player_dto.attack_name[sizeof(player_dto.attack_name) - 1] = '\0'; // Ensure null termination
+        } else {
+            player_dto.attack_name[0] = '\0'; // Empty string if not attacking
+        }
 
         auto pkg = serializePacket<RemotePlayerDTO>(EVENT_DEFINITIONS[EventName::WORLD_SNAPSHOT].id, player_dto);
 
